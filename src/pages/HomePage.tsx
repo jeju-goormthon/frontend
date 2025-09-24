@@ -1,10 +1,5 @@
-import HomePrimaryActionsGrid from '@/components/home/HomePrimaryActionsGrid';
+import HomeHeroSection from '@/components/home/HomeHeroSection';
 
 export default function HomePage() {
-  return (
-    <>
-      <div>HomePage</div>
-      <HomePrimaryActionsGrid />
-    </>
-  );
+  return <HomeHeroSection />;
 }
