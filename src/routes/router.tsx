@@ -4,7 +4,7 @@ import RootFrame from '@/layouts/RootFrame';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import RoutePage from '@/pages/RoutePage';
-import SeasonTicketPage from '@/pages/SeasionTicketPage';
+import SeasonTicketPage from '@/pages/SeasonTicketPage';
 
 export const router = createBrowserRouter([
   {
