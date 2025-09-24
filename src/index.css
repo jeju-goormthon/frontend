@@ -5,3 +5,15 @@
 @import 'tailwindcss/utilities.css' layer(tw-utilities);
 @import '@vapor-ui/core/styles.css';
 @import '@vapor-ui/core/tailwind.css';
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100dvh;
+  }
+
+  html {
+    word-break: keep-all;
+  }
+}
