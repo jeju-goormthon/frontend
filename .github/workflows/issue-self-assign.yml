@@ -1,0 +1,43 @@
+name: '이슈 생성시 자동 담당자 지정'
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  self_assign:
+    name: '📌 작성자를 담당자로 자동 지정'
+    runs-on: ubuntu-latest
+    steps:
+      - name: '🏷️ 작성자 추가 + 성공시 댓글'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue = context.payload.issue;
+            const issue_number = issue.number;
+            const author = issue.user.login;
+
+            const assignees = Array.isArray(issue.assignees) ? issue.assignees.map(a => a.login) : [];
+
+            // 작성자가 이미 배정돼 있으면 바로 종료
+            if (assignees.includes(author)) {
+              core.info(`ℹ️ @${author} 이미 담당자입니다. 건너뜀 (#${issue_number})`);
+              return;
+            }
+
+            // 기존 담당자는 그대로 두고 작성자만 추가
+            await github.rest.issues.addAssignees({
+              owner, repo, issue_number,
+              assignees: [author],
+            });
+
+            core.info(`✅ @${author} 님을 #${issue_number} 이슈의 담당자로 지정 완료`);
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number,
+              body: `✅ @${author} 님을 #${issue_number} 이슈의 담당자로 자동 지정했어요!`
+            });
