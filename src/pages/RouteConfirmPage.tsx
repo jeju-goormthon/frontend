@@ -95,7 +95,7 @@ export default function RouteConfirmPage() {
         <div className='h-2.5 bg-[#F7F7F7]' />
         <TermsAgreement />
       </div>
-      <div className='sticky bottom-0 z-50 px-6 pt-2.5 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
+      <div className='sticky bottom-0 z-50 bg-white px-6 pt-2.5 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         <NavButton
           disabled={isPaymentDisabled}
           label={paymentAmount === 0 ? '0원 결제' : '결제하기'}

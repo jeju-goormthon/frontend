@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
 import BackHeader from '@/components/BackHeader';
+import DeptSelectMsg from '@/components/department/DeptSelectMsg';
+import MedicalDeptSelect from '@/components/department/MedicalDeptSelect';
 import NavButton from '@/components/NavButton';
 
 export default function DepartmentSelectPage() {
@@ -11,8 +13,10 @@ export default function DepartmentSelectPage() {
       <div className='sticky top-0 z-60'>
         <BackHeader title='진료과목 선택' />
       </div>
-      <div className='flex-1 overflow-y-auto'>
-        <span>테스트</span>
+
+      <div className='flex-1 overflow-y-auto p-6'>
+        <DeptSelectMsg />
+        <MedicalDeptSelect />
       </div>
       <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         <NavButton label='저장' onClick={() => navigate('/')} />

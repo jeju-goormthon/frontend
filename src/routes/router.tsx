@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
       { path: '/reservation-result', element: <ReservationResultPage /> },
       { path: '*', element: <NotFoundPage /> },
       { path: '/oauth/callback', element: <KakaoCallbackPage /> },
-      { path: '/departments/select', element: <DepartmentSelectPage /> },
+      { path: '/department', element: <DepartmentSelectPage /> },
       { path: '/reservations', element: <ReservationsPage /> },
     ],
   },

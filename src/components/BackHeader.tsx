@@ -25,7 +25,9 @@ export default function BackHeader({ title }: BackHeaderProps) {
       </Grid.Item>
 
       <Grid.Item className='justify-self-center'>
-        <Text className='text-[18px] leading-[1.3] font-semibold text-[#262626]'>{title}</Text>
+        <Text className='text-[#262626]' typography='heading6'>
+          {title}
+        </Text>
       </Grid.Item>
 
       <Grid.Item>
