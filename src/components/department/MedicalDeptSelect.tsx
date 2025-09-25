@@ -2,38 +2,54 @@
 import { Box, Flex, Radio, RadioGroup, Text } from '@vapor-ui/core';
 import { useState } from 'react';
 
+import type { MedicalDepartment } from '@/apis/types';
 import eye from '@/assets/icons/eye.svg?url';
 import heart from '@/assets/icons/heart.svg?url';
 import more from '@/assets/icons/more.svg?url';
 import wave from '@/assets/icons/wave.svg?url';
 
 type DeptItem = {
-  id: string;
+  id: MedicalDepartment;
   title: string;
   desc: string;
   iconUrl: string;
 };
 
 const ITEMS: DeptItem[] = [
-  { id: 'internal', title: '내과', desc: '감기, 소화불량, 혈압 등', iconUrl: heart },
-  { id: 'oph', title: '안과', desc: '시력검사, 안구건조증 등', iconUrl: eye },
-  { id: 'rehab', title: '재활의학과', desc: '물리치료, 도수치료 등', iconUrl: wave },
-  { id: 'etc', title: '기타', desc: '위에 해당되지 않는 경우', iconUrl: more },
+  { id: 'INTERNAL_MEDICINE', title: '내과', desc: '감기, 소화불량, 혈압 등', iconUrl: heart },
+  { id: 'OPHTHALMOLOGY', title: '안과', desc: '시력검사, 안구건조증 등', iconUrl: eye },
+  { id: 'REHABILITATION', title: '재활의학과', desc: '물리치료, 도수치료 등', iconUrl: wave },
+  { id: 'ENT', title: '기타', desc: '위에 해당되지 않는 경우', iconUrl: more },
 ];
 
-export default function MedicalDeptSelect({ name = 'dept' }: { name?: string }) {
-  const [value, setValue] = useState<string>(ITEMS[0].id);
+interface MedicalDeptSelectProps {
+  name?: string;
+  value?: MedicalDepartment;
+  onChange?: (value: MedicalDepartment) => void;
+}
+
+export default function MedicalDeptSelect({ name = 'dept', value, onChange }: MedicalDeptSelectProps) {
+  const [internalValue, setInternalValue] = useState<MedicalDepartment>(value || ITEMS[0].id);
+
+  const currentValue = value !== undefined ? value : internalValue;
+
+  const handleChange = (newValue: MedicalDepartment) => {
+    if (value === undefined) {
+      setInternalValue(newValue);
+    }
+    onChange?.(newValue);
+  };
 
   return (
     <RadioGroup.Root
       aria-label='진료과목 선택'
       className='gap-v-150'
       name={name}
-      value={value} // ✅ 컨트롤드
-      onValueChange={(val) => setValue(String(val))} // ✅ event 무시
+      value={currentValue}
+      onValueChange={(val) => handleChange(val as MedicalDepartment)}
     >
       {ITEMS.map((item) => (
-        <DeptCard key={item.id} checked={value === item.id} item={item} onSelect={() => setValue(item.id)} />
+        <DeptCard key={item.id} checked={currentValue === item.id} item={item} onSelect={() => handleChange(item.id)} />
       ))}
     </RadioGroup.Root>
   );
