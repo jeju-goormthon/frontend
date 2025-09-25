@@ -149,7 +149,7 @@ export default function RouteDateStrip({
 
   // ── UI ───────────────────────────────────────────────────────
   return (
-    <div className='w-full'>
+    <div className='w-full border-b-[10px] border-[#F7F7F7] py-5'>
       {/* 상단: 월 + 드롭다운 */}
       <div className='relative mb-4 flex items-center gap-0 pl-6'>
         <div className='text-sm font-semibold'>{format(month, 'M월', { locale: ko })}</div>
@@ -230,14 +230,16 @@ export default function RouteDateStrip({
               <div
                 key={d.toISOString()}
                 className={
-                  isToday(d) ? 'font-bold text-[#3174DC]' : 'text-[var(--vapor-color-foreground-normal,#2B2D36)]'
+                  isToday(d)
+                    ? 'font-bold text-[#3174DC]'
+                    : 'font-medium text-[var(--vapor-color-foreground-normal,#2B2D36)]'
                 }
               >
                 {isToday(d) ? '오늘' : format(d, 'E', { locale: ko })}
               </div>
             ))
           : ['월', '화', '수', '목', '금', '토', '일'].map((w) => (
-              <div key={w} className='text-[var(--vapor-color-foreground-normal,#2B2D36)]'>
+              <div key={w} className='font-medium text-[var(--vapor-color-foreground-normal,#2B2D36)]'>
                 {w}
               </div>
             ))}
