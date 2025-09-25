@@ -41,6 +41,7 @@ export default function RouteConfirmPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tossPayments, setTossPayments] = useState<any>(null);
+  const [termsAgreed, setTermsAgreed] = useState(false);
 
   // Redirect if no route selected and fetch route detail
   useEffect(() => {
@@ -136,7 +137,7 @@ export default function RouteConfirmPage() {
   };
 
   const paymentAmount = calculateAmount();
-  const isPaymentDisabled = paymentMethod === 'ticket' && !hasTicket;
+  const isPaymentDisabled = (paymentMethod === 'ticket' && !hasTicket) || !termsAgreed;
 
   // Format selected date for display
   const formattedDate = format(selectedDate, 'yyyy.MM.dd(E)', { locale: ko });
@@ -306,7 +307,7 @@ export default function RouteConfirmPage() {
           </Text>
         </HStack>
         <div className='h-2.5 bg-[#F7F7F7]' />
-        <TermsAgreement />
+        <TermsAgreement onChange={(result) => setTermsAgreed(result.allAgreed)} />
       </div>
       <div className='sticky bottom-0 z-50 bg-white px-6 pt-2.5 pb-3 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         {error && <Text style={{ color: '#D92D20', marginBottom: 8 }}>{error}</Text>}
