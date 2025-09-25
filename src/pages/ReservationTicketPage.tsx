@@ -1,8 +1,11 @@
 import { Badge, Box, Button, HStack, Text, VStack } from '@vapor-ui/core';
+import QRCode from 'react-qr-code';
 
 import BackHeader from '@/components/BackHeader';
 
 export default function ReservationTicketPage() {
+  // TODO: 서버에서 받은 QR 코드 데이터로 교체
+  const qrCodeData = 'RESERVATION-1234-5678-2025092609';
   return (
     <div className='relative flex min-h-screen flex-col'>
       <div className='sticky top-0 z-60'>
@@ -32,8 +35,10 @@ export default function ReservationTicketPage() {
 
           {/* QR + 날짜 + 승차번호 */}
           <div className='flex flex-col items-center gap-4'>
-            {/* TODO: QRCode 컴포넌트로 교체 */}
-            <div aria-label='QR code placeholder' className='h-40 w-40 rounded-lg bg-black' />
+            {/* QR Code */}
+            <div className='flex h-40 w-40 items-center justify-center rounded-lg bg-white p-2'>
+              <QRCode size={152} style={{ height: 'auto', maxWidth: '100%', width: '100%' }} value={qrCodeData} />
+            </div>
 
             <div>
               <Text typography='subtitle1'>2025.09.26 (금)</Text>
