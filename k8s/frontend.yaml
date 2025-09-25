@@ -17,6 +17,7 @@ spec:
         image: 837126493345.dkr.ecr.ap-northeast-2.amazonaws.com/goormthon-5/frontend:build-21
         ports:
         - containerPort: 80
+        # kubectl create secret generic frontend-env-secret --from-env-file=.env 로 주입했음!!
         envFrom:
         - secretRef:
             name: frontend-env-secret
