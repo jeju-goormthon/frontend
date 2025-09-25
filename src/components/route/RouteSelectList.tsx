@@ -41,7 +41,16 @@ export default function RouteSelectList({ selectedDate }: RouteSelectListProps) 
         }
 
         const data = await getRoutes(sortBy);
-        setRoutes(data);
+        console.log('API 응답:', data); // 디버깅용
+        // API 응답이 배열인지 확인하고 적절히 처리
+        if (Array.isArray(data)) {
+          setRoutes(data);
+        } else if (data && Array.isArray(data.data)) {
+          setRoutes(data.data);
+        } else {
+          setRoutes([]);
+          console.warn('예상하지 못한 API 응답 구조:', data);
+        }
       } catch (err: any) {
         setError(err.message);
         console.error('노선 목록 조회 실패:', err);
@@ -55,6 +64,9 @@ export default function RouteSelectList({ selectedDate }: RouteSelectListProps) 
 
   // 정렬 적용
   const list = useMemo(() => {
+    if (!Array.isArray(routes)) {
+      return [];
+    }
     const arr = [...routes];
     if (byFast) {
       arr.sort((a, b) => a.startAt.localeCompare(b.startAt));
