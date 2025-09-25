@@ -20,10 +20,15 @@ export default function ReservationTicketPage() {
       >
         {/* 상단 예약번호 카드 */}
         {/* 예약번호 카드 */}
-        <section className='mb-1 rounded-2xl bg-white px-5 py-4 shadow-[0_8px_24px_rgba(56,100,255,0.06)] ring-1 ring-[#E3F0FF]'>
+        <section
+          className='mt-6 mb-1 rounded-2xl bg-white px-5 py-4'
+          style={{ boxShadow: '0 4px 40px 0 rgba(0, 0, 0, 0.05)' }}
+        >
           <div className='flex items-center justify-between'>
-            <div className='flex gap-2'>
-              <Text typography='subtitle1'>예약번호</Text>
+            <div className='my-1 flex gap-2'>
+              <Text className='text-[#959595]' typography='subtitle1'>
+                예약번호
+              </Text>
               <Text typography='subtitle1'>1234-5678</Text>
             </div>
 
@@ -40,7 +45,7 @@ export default function ReservationTicketPage() {
               <QRCode size={152} style={{ height: 'auto', maxWidth: '100%', width: '100%' }} value={qrCodeData} />
             </div>
 
-            <div>
+            <div className='mb-2'>
               <Text typography='subtitle1'>2025.09.26 (금)</Text>
               <HStack justifyContent='space-between' paddingX='$100'>
                 <Text className='text-[#959595]' typography='subtitle1'>
@@ -63,6 +68,7 @@ export default function ReservationTicketPage() {
           gap='$100'
           paddingX='$250'
           paddingY='$300'
+          style={{ boxShadow: '0 4px 40px 0 rgba(0, 0, 0, 0.05)' }}
         >
           <VStack gap='$100'>
             <HStack gap='$200'>
@@ -89,12 +95,12 @@ export default function ReservationTicketPage() {
 
         {/* 하단 액션 버튼 */}
         <HStack className='mt-20 flex gap-2.5'>
-          <Button stretch className='h-14 bg-[#CEE3FF] text-[#0E47A3]'>
+          <Button stretch className='h-14 rounded-xl bg-[#CEE3FF] text-[#0E47A3]'>
             <Text className='text-[#0E47A3]' typography='heading6'>
               진료과목 변경
             </Text>
           </Button>
-          <Button stretch className='h-14 bg-[#F7F7F7] text-[#393939]'>
+          <Button stretch className='h-14 rounded-xl bg-[#F7F7F7] text-[#393939]'>
             <Text className='text-[#393939]' typography='heading6'>
               예약 취소
             </Text>
