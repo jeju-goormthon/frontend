@@ -13,6 +13,8 @@
     "@vapor-ui/core": "1.0.0-beta.0",
     "@vapor-ui/icons": "1.0.0-beta.0",
     "axios": "^1.12.2",
+    "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1",
