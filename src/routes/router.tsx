@@ -9,6 +9,7 @@ import ReservationResultPage from '@/pages/ReservationResultPage';
 import RouteConfirmPage from '@/pages/RouteConfirmPage';
 import RoutePage from '@/pages/RoutePage';
 import SeasonTicketPage from '@/pages/SeasonTicketPage';
+import Test from '@/pages/Test';
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: '/reservation-result', element: <ReservationResultPage /> },
       { path: '*', element: <NotFoundPage /> },
       { path: '/oauth/callback', element: <KakaoCallbackPage /> },
+      { path: '/test', element: <Test /> },
     ],
   },
 ]);
