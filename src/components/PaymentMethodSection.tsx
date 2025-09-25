@@ -50,7 +50,7 @@ export default function PaymentMethodSection({
           </Text>
 
           {/* 할인 배지 */}
-          <img height={22} src={discount_message} />
+          <img className='animate-bounce' height={22} src={discount_message} />
         </label>
 
         {/* ticket 선택 시: 정기권 상태 표시 카드 */}
