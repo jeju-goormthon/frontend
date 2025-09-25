@@ -182,9 +182,10 @@ export default function SeasonTicketPage() {
           )}
         </VStack>
       </div>
+
       {/* ═══════════════ 결제하기 버튼 (정기권 미보유자용) ═══════════════ */}
       {!hasTicket && (
-        <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
+        <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-3 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
           <NavButton
             label='결제하기'
             onClick={() => {
