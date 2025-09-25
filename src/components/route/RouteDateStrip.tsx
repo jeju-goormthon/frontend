@@ -16,18 +16,19 @@ import {
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import useEmblaCarousel from 'embla-carousel-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Props = {
   month: Date; // 기준 월
   value: Date | null; // 선택된 날짜
-  onChange: (d: Date) => void;
-  onMonthChange?: (m: Date) => void; // 월 변경 콜백
+  onChange: (d: Date) => void; // 날짜 선택 콜백
+  onMonthChange?: (m: Date) => void; // 월 변경 콜백(상위 state)
   minDate?: Date;
   maxDate?: Date;
-  weekStartsOn?: 0 | 1;
+  weekStartsOn?: 0 | 1; // 0: 일요일, 1: 월요일(기본)
 };
 
+/** 월의 주(월~일) 배열 생성 */
 function buildWeeksInMonth(month: Date, weekStartsOn: 0 | 1) {
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
@@ -43,6 +44,14 @@ function buildWeeksInMonth(month: Date, weekStartsOn: 0 | 1) {
   return weeks;
 }
 
+/** 초기 화면 전용: '오늘부터 7일(연속)' */
+function forward7FromToday(allWeeks: Date[][], today: Date): Date[] {
+  const flat = allWeeks.flat();
+  const base = flat.findIndex((d) => isSameDay(d, today));
+  if (base === -1) return allWeeks[0] ?? [];
+  return flat.slice(base, base + 7);
+}
+
 export default function RouteDateStrip({
   month,
   value,
@@ -52,16 +61,25 @@ export default function RouteDateStrip({
   maxDate,
   weekStartsOn = 1,
 }: Props) {
+  // ── 데이터 준비 ───────────────────────────────────────────────
   const weeks = useMemo(() => buildWeeksInMonth(month, weekStartsOn), [month, weekStartsOn]);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: 'start', dragFree: false });
-  const [page, setPage] = useState(0);
+  const todayStart = startOfDay(new Date());
+  const todayWeekIndex = useMemo(
+    () => weeks.findIndex((w) => w.some((d) => isSameDay(d, todayStart))),
+    [weeks, todayStart],
+  );
 
-  // ----- 드롭다운 상태 -----
+  // ── Embla(수평 슬라이더) ─────────────────────────────────────
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: 'start', dragFree: false });
+  const [page, setPage] = useState(0); // 현재 페이지(주) 인덱스
+  const [primeTodayLeft, setPrimeTodayLeft] = useState(true); // 첫 진입에만 '오늘 왼쪽' 연출
+
+  // ── 드롭다운 상태 ────────────────────────────────────────────
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
 
-  // 바깥 클릭 닫기
+  // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -75,78 +93,72 @@ export default function RouteDateStrip({
       }
     };
     window.addEventListener('mousedown', onDown);
-    return () => window.removeEventListener('mousedown', onDown);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+    };
   }, [open]);
 
-  // Embla 페이지 인덱스 동기화
+  // Embla: 페이지 인덱스 동기화(무한 스크롤 제거 → 월 전환 로직 없음)
   useEffect(() => {
-    if (!emblaApi) return; // 아무것도 등록하지 않으면 cleanup 없음(OK)
+    if (!emblaApi) return;
 
-    const onSelect = () => setPage(emblaApi.selectedScrollSnap());
+    const onSelect = () => {
+      const sel = emblaApi.selectedScrollSnap();
+      setPage(sel);
+      if (sel !== todayWeekIndex) setPrimeTodayLeft(false); // 다른 주로 이동하면 초기 연출 해제
+    };
 
-    // 구독
     emblaApi.on('select', onSelect);
-
-    // cleanup 함수만 반환해야 함
     return () => {
       emblaApi.off('select', onSelect);
     };
-  }, [emblaApi]); // 다른 의존성 불필요
+  }, [emblaApi, todayWeekIndex]);
 
-  // 첫 진입/선택 변경 시: 해당 주로 이동
+  // 첫 진입/선택 변경 시: 선택된 날짜가 속한 주로 스크롤
   useEffect(() => {
     if (!emblaApi || !value) return;
+
     const idx = weeks.findIndex((w) => w.some((d) => isSameDay(d, value)));
     if (idx >= 0) {
       emblaApi.scrollTo(idx, true);
-      setPage(idx); // ← 초기에도 헤더가 올바르게 뜨도록 보장
+      setPage(idx);
+      if (idx !== todayWeekIndex) setPrimeTodayLeft(false);
     }
-  }, [emblaApi, value, weeks]);
+  }, [emblaApi, value, weeks, todayWeekIndex]);
 
-  // ── 변경: 오늘 이전 비활성화(다른 조건은 그대로 사용 가능) ──
-  const todayStart = startOfDay(new Date());
-  const isDisabled = useCallback(
-    (d: Date) => {
-      if (d < todayStart) return true; // 이전 날짜 불가
-      if (minDate && d < startOfDay(minDate)) return true;
-      if (maxDate && d > startOfDay(maxDate)) return true;
-      return false;
-    },
-    [minDate, maxDate, todayStart],
-  );
+  // 현재 페이지에서 보여줄 주(헤더/바디 공통)
+  const currentWeekRaw = weeks[page] ?? weeks[0] ?? [];
+  const currentWeekForView =
+    primeTodayLeft && page === todayWeekIndex ? forward7FromToday(weeks, todayStart) : currentWeekRaw;
 
-  // 드롭다운에 노출할 월 목록 (현재 기준 -2 ~ +8)
+  // 드롭다운 월 목록(현재 기준 -2 ~ +8)
   const monthOptions = useMemo(() => {
     const base = startOfMonth(month);
     return Array.from({ length: 11 }, (_, i) => addMonths(base, i - 2));
   }, [month]);
 
-  // 드롭다운에서 월 변경 시: 해당 월의 1일을 기본 선택
+  // 월 수동 변경: 이번 달이면 오늘, 그 외에는 1일을 자동 선택
   const changeMonth = (next: Date) => {
     const first = startOfMonth(next);
-
-    // 이번 달을 선택했고 1일이 과거라면 '오늘'을 선택, 그 외에는 1일 선택
     const autoSelect = isSameMonth(todayStart, next) && first < todayStart ? todayStart : first;
-
-    onMonthChange?.(startOfMonth(next));
-    onChange(autoSelect); // ⬅️ 선택 날짜도 같이 바꿔줌
+    onMonthChange?.(first);
+    onChange(autoSelect);
     setOpen(false);
+    setPrimeTodayLeft(true); // 사용자가 점프했을 때 다시 최초 연출 허용
   };
 
+  // ── UI ───────────────────────────────────────────────────────
   return (
     <div className='w-full'>
       {/* 상단: 월 + 드롭다운 */}
       <div className='relative mb-4 flex items-center gap-0 pl-6'>
-        <div className='text-sm font-semibold text-[var(--vapor-typography-fontSize-075)]'>
-          {format(month, 'M월', { locale: ko })}
-        </div>
+        <div className='text-sm font-semibold'>{format(month, 'M월', { locale: ko })}</div>
 
-        {/* 드롭다운 트리거 */}
         <button
           ref={triggerRef}
           aria-expanded={open}
           aria-haspopup='listbox'
-          className='inline-flex items-center gap-1 rounded-md bg-[var(--vapor-color-surface,#ffffff)] px-1 py-1 text-[12px] text-[var(--vapor-color-text-secondary,#6b7280)] hover:bg-gray-50'
+          className='inline-flex items-center gap-1 rounded-md px-1 py-1 text-[12px] text-[var(--vapor-color-text-secondary,#6b7280)] hover:bg-gray-50'
           type='button'
           onClick={() => setOpen((s) => !s)}
         >
@@ -155,7 +167,6 @@ export default function RouteDateStrip({
           </svg>
         </button>
 
-        {/* 드롭다운 패널 */}
         {open && (
           <div
             ref={popRef}
@@ -212,14 +223,14 @@ export default function RouteDateStrip({
         )}
       </div>
 
-      {/* ── 변경: 현재 주 기준 요일 헤더(오늘이면 '오늘' + 파란색) ── */}
+      {/* 현재 페이지의 요일 헤더 (오늘이면 '오늘' + 파란색) */}
       <div className='mb-1 grid grid-cols-7 justify-items-center px-4 text-center text-[12px]'>
-        {(weeks[page] ?? weeks[0] ?? []).length === 7
-          ? (weeks[page] ?? weeks[0] ?? []).map((d) => (
+        {currentWeekForView.length === 7
+          ? currentWeekForView.map((d) => (
               <div
                 key={d.toISOString()}
                 className={
-                  isToday(d) ? 'font-semibold text-[#3174DC]' : 'text-[var(--vapor-color-foreground-normal,#2B2D36)]'
+                  isToday(d) ? 'font-bold text-[#3174DC]' : 'text-[var(--vapor-color-foreground-normal,#2B2D36)]'
                 }
               >
                 {isToday(d) ? '오늘' : format(d, 'E', { locale: ko })}
@@ -232,43 +243,72 @@ export default function RouteDateStrip({
             ))}
       </div>
 
-      {/* 주 단위 슬라이드 */}
+      {/* 주 단위 슬라이드 (무한 스크롤 없음) */}
       <div ref={emblaRef} className='overflow-hidden'>
         <div className='flex touch-pan-x'>
-          {weeks.map((week, i) => (
-            <div key={i} className='min-w-full px-4'>
-              <div className='grid grid-cols-7 justify-items-center gap-x-0'>
-                {week.map((d) => {
-                  const selected = value && isSameDay(d, value);
-                  const disabled = isDisabled(d) || !isSameMonth(d, month);
-                  const today = isToday(d);
-                  return (
-                    <button
-                      key={d.toISOString()}
-                      className={[
-                        'flex h-8 w-8 flex-col items-center justify-center rounded-full transition-colors',
-                        disabled
-                          ? 'cursor-not-allowed border-gray-200 text-gray-400 opacity-40'
-                          : selected
-                            ? 'bg-[#3174DC] text-[#FFFFFF]'
-                            : 'border-[var(--vapor-color-border,#e5e7eb)] hover:bg-gray-50',
-                      ].join(' ')}
-                      disabled={disabled}
-                      onClick={() => {
-                        if (disabled) return;
-                        console.log('[RouteDateStrip] 선택:', format(d, 'yyyy-MM-dd (EEE)', { locale: ko }));
-                        onChange(d);
-                      }}
-                    >
-                      {/* 아래 라벨은 날짜만 노출 */}
-                      <span className={today ? 'text-[14px] font-semibold' : 'text-[10px] text-gray-500'} />
-                      <span className='text-[14px] font-medium'>{format(d, 'd')}</span>
-                    </button>
-                  );
-                })}
+          {weeks.map((week, i) => {
+            // '오늘 주' & 최초 진입이면 오늘부터 7일, 그 외엔 주(월~일) 원형
+            const weekPage = primeTodayLeft && i === todayWeekIndex ? forward7FromToday(weeks, todayStart) : week;
+
+            const pageKey = week[0]?.toISOString() ?? `page-${i}`;
+            return (
+              <div key={pageKey} className='min-w-full px-4'>
+                <div className='grid grid-cols-7 justify-items-center gap-x-0'>
+                  {weekPage.map((d) => {
+                    const selected = value && isSameDay(d, value);
+                    const disabled =
+                      d < todayStart || (minDate && d < startOfDay(minDate)) || (maxDate && d > startOfDay(maxDate));
+
+                    // (선택) 교차-월은 살짝 옅게 보이게
+                    const isOtherMonth = !isSameMonth(d, month);
+                    const today = isToday(d);
+
+                    return (
+                      <button
+                        key={d.toISOString()}
+                        className={[
+                          'flex h-8 w-8 flex-col items-center justify-center rounded-full transition-colors',
+                          isOtherMonth ? 'opacity-70' : '',
+                          disabled
+                            ? 'cursor-not-allowed border-gray-200 text-gray-400 opacity-40'
+                            : selected
+                              ? 'bg-[#3174DC] text-[#FFFFFF]'
+                              : 'border-[var(--vapor-color-border,#e5e7eb)] hover:bg-gray-50',
+                        ].join(' ')}
+                        disabled={disabled}
+                        onClick={() => {
+                          if (disabled) return;
+
+                          // 교차-월 날짜를 탭하면 헤더(month)를 해당 월로 변경
+                          if (!isSameMonth(d, month)) {
+                            onMonthChange?.(startOfMonth(d));
+                          }
+
+                          console.log('[RouteDateStrip] 선택:', format(d, 'yyyy-MM-dd (EEE)', { locale: ko }));
+                          onChange(d);
+                        }}
+                      >
+                        <span
+                          className={[
+                            'text-[14px] font-medium',
+                            selected
+                              ? 'text-white' // 선택된 날은 흰색 유지
+                              : disabled
+                                ? 'text-gray-400' // 비활성 회색
+                                : today
+                                  ? 'text-[#3174DC]' // ⬅️ 오늘은 파란색
+                                  : 'text-[var(--vapor-color-foreground-normal,#2B2D36)]',
+                          ].join(' ')}
+                        >
+                          {format(d, 'd')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
