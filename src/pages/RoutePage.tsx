@@ -17,20 +17,20 @@ export default function RoutePage() {
       <div className='sticky top-0 z-50'>
         <BackHeader title='노선 선택' />
       </div>
-      <div className='flex-1 overflow-y-auto px-4 py-4'>
-        <div className='sticky top-0 bg-white pt-4 pb-3'>
-          <RouteDateStrip
-            month={month}
-            value={date}
-            weekStartsOn={1}
-            onChange={setDate}
-            onMonthChange={setMonth} // ⬅️ 드롭다운에서 월 변경 반영
-          />
-        </div>
+      <div className='sticky top-0 z-[60] bg-white'>
+        <RouteDateStrip
+          month={month}
+          value={date}
+          weekStartsOn={1}
+          onChange={setDate}
+          onMonthChange={setMonth} // ⬅️ 드롭다운에서 월 변경 반영
+        />
+      </div>
+      <div className='flex-1 overflow-y-auto'>
         {/* 아래엔 선택된 날짜의 노선 리스트 */}
         <RouteSelectList />
       </div>
-      <div className='sticky bottom-0 z-50 px-6 pt-2.5 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
+      <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         <NavButton label='다음' onClick={() => navigate('/route/confirm')} />
       </div>
     </div>
