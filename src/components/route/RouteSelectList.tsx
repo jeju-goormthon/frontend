@@ -1,7 +1,9 @@
 // RouteSelectPage.tsx
-import { Box, Checkbox, Flex, IconButton, RadioGroup, Text } from '@vapor-ui/core';
+import { Box, Checkbox, Flex, Radio, RadioGroup, Text } from '@vapor-ui/core';
 import { LocationOutlineIcon } from '@vapor-ui/icons';
 import { useMemo, useState } from 'react';
+
+import RightShootIcon from '@/assets/icons/RightShootIcon';
 
 type RouteItem = {
   id: string;
@@ -51,9 +53,9 @@ export default function RouteSelectList() {
   }, [byFast, byNearest]);
 
   return (
-    <Box style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
+    <Box style={{ maxWidth: 480, margin: '0 auto', padding: 24 }}>
       {/* 필터 영역 */}
-      <Flex alignItems='center' gap={12} style={{ padding: 8, paddingBottom: 12 }}>
+      <Flex alignItems='center' gap='$200' style={{ paddingBottom: 24 }}>
         <FilterCheckbox checked={byFast} id='fast' label='빠른 출발순' onCheckedChange={(v) => setByFast(v === true)} />
         <FilterCheckbox
           checked={byNearest}
@@ -69,15 +71,9 @@ export default function RouteSelectList() {
         value={value}
         onValueChange={(newValue, _evt) => setValue(String(newValue))}
       >
-        <Flex flexDirection='column' gap={12}>
+        <Flex flexDirection='column' gap='$150'>
           {list.map((item) => (
-            <RouteOptionCard
-              key={item.id}
-              checked={value === item.id}
-              item={item}
-              onLocate={() => console.log('locate:', item.id)}
-              onSelect={() => setValue(item.id)}
-            />
+            <RouteOptionCard key={item.id} checked={value === item.id} item={item} onSelect={() => setValue(item.id)} />
           ))}
         </Flex>
       </RadioGroup.Root>
@@ -101,73 +97,51 @@ function FilterCheckbox({
   onCheckedChange: (v: boolean | 'indeterminate') => void;
   disabled?: boolean;
 }) {
-  // ✅ 라벨 opacity는 제거하고 색상만 조절
-  const pillBorder = checked ? '1px solid #3174DC' : '1px solid var(--vapor-color-border-subtle)';
-  const textColor = disabled ? 'var(--vapor-color-fg-muted)' : checked ? '#3174DC' : '#959595'; // 회색(항상 보이도록)
-
   return (
     <label
       htmlFor={id}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 8,
-        padding: '8px 12px',
+        gap: 4,
         borderRadius: 9999,
-        border: pillBorder,
+        border: checked ? '1px #3174DC' : '1px var(--vapor-color-border-subtle)',
         cursor: disabled ? 'not-allowed' : 'pointer',
         userSelect: 'none',
+        opacity: disabled ? 0.7 : 1,
       }}
     >
       <Checkbox.Root
         checked={checked}
         disabled={disabled}
         id={id}
-        onCheckedChange={onCheckedChange}
-        // ✅ hover 없이도 상시 보이게: unchecked에도 회색 배경 + 테두리 유지
         style={{
           width: 16,
           height: 16,
           borderRadius: 4,
+          border: '1px solid var(--vapor-color-border)',
           display: 'grid',
           placeItems: 'center',
-          border: checked ? '1px solid #3174DC' : '1px solid #E5E7EB',
-          background: checked ? '#3174DC' : '#959595', // <- 회색 네모 항상 보임
-          transition: 'background 120ms, border-color 120ms, box-shadow 120ms',
-          boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.02)',
+          background: checked ? '#3174DC' : '#EEF2F6', // ✅ 항상 네모 보이게
+        }}
+        onCheckedChange={onCheckedChange}
+      />
+
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 500,
+          color: checked ? '#3174DC' : '#98A2B3',
         }}
       >
-        <Checkbox.Indicator>
-          {/* 체크 상태에서만 보이는 흰 점 */}
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 2,
-              background: '#fff',
-            }}
-          />
-        </Checkbox.Indicator>
-      </Checkbox.Root>
-
-      <Text style={{ fontWeight: 600, color: textColor }}>{label}</Text>
+        {label}
+      </span>
     </label>
   );
 }
 
 /** 라디오 카드 — 합성 컴포넌트: RadioGroup.Item + RadioGroup.Indicator */
-function RouteOptionCard({
-  item,
-  checked,
-  onSelect,
-  onLocate,
-}: {
-  item: RouteItem;
-  checked: boolean;
-  onSelect: () => void;
-  onLocate: () => void;
-}) {
-  const border = checked ? '1.5px solid #3174DC' : '1px solid var(--vapor-color-border-subtle)';
+function RouteOptionCard({ item, checked, onSelect }: { item: RouteItem; checked: boolean; onSelect: () => void }) {
   const shadow = checked
     ? '0 0 0 1px rgba(49,116,220,0.04), 0 8px 20px rgba(0,0,0,0.04)'
     : 'inset 0 0 0 1px rgba(0,0,0,0.02)';
@@ -176,8 +150,10 @@ function RouteOptionCard({
     <Box
       style={{
         background: '#fff',
-        border,
+        border: checked ? '1.5px solid #3174DC' : '1.5px solid #F0F0F0',
+        borderColor: checked ? '#3174DC' : '#F0F0F0',
         borderRadius: 'var(--vapor-size-borderRadius-500)',
+        backgroundColor: checked ? '#F1F7FF' : '#fff',
         boxShadow: shadow,
         padding: 16, // 내부 패딩 16px
         cursor: 'pointer',
@@ -188,48 +164,52 @@ function RouteOptionCard({
       <Flex alignItems='center' gap={12}>
         {/* 좌측 라디오: Item만 사용 */}
         <RadioGroup.Root
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: '50%',
-            border: checked ? '5px solid #3174DC' : '1.5px solid var(--vapor-color-border)',
-            background: '#fff',
-            flex: '0 0 auto',
-          }}
+          defaultValue='v1'
+          name='route'
+          //   style={{
+          //     width: 16,
+          //     height: 16,
+          //     borderRadius: '50%',
+          //     border: checked ? '5px solid #3174DC' : '1.5px solid var(--vapor-color-border)',
+          //     background: '#fff',
+          //     flex: '0 0 auto',
+          //   }}
           value={item.id}
           onClick={(e) => e.stopPropagation()} // 카드 onClick과 중복 방지
         />
 
         {/* 본문 */}
-        <Flex alignItems='center' justifyContent='between' style={{ flex: 1 }}>
+        <Radio.Root value={item.id} />
+        <Flex alignItems='center' className='pl-3.5' justifyContent='between' style={{ flex: 1 }}>
           <Box style={{ flex: 1, minWidth: 0 }}>
-            <Flex alignItems='center' justifyContent='between'>
-              <Text style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.2 }}>{item.title}</Text>
-              <IconButton aria-label='정류장 위치 보기' className='bg-white' size='sm'>
-                <LocationOutlineIcon className='bg-white text-[#393939]' />
-              </IconButton>
+            <Flex alignItems='center' justifyContent='space-between'>
+              <Text style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.2 }}>{item.title}</Text>
+              <LocationOutlineIcon className='text-[#393939]' />
             </Flex>
 
-            <Text style={{ marginTop: 4, color: 'var(--vapor-color-fg-muted)', fontSize: 13 }}>
-              정류장까지 도보 {item.walkMin}분
+            <Text style={{ marginTop: 4, color: 'var(--vapor-color-fg-muted)', fontSize: 12, fontWeight: 500 }}>
+              <span className='font-medium text-[#959595]'>정류장까지</span> 도보 {item.walkMin}분
             </Text>
 
-            <Flex alignItems='center' gap={8} style={{ marginTop: 8 }}>
-              <Text style={{ color: '#3174DC', fontWeight: 700 }}>출발 {item.depart}</Text>
-              <Text aria-hidden>→</Text>
-              <Text style={{ color: '#3174DC', fontWeight: 700 }}>도착 {item.arrive}</Text>
+            <Flex alignItems='center' gap={8}>
+              <Text style={{ color: '#3174DC' }} typography='subtitle2'>
+                출발 <span className='pr-1 text-sm font-bold text-[#262626]'>{item.depart}</span>
+              </Text>
+              <RightShootIcon className='text-[#B4B4B4]' />
+              <Text style={{ color: '#3174DC', padding: '0 4px' }} typography='subtitle2'>
+                도착 <span className='text-sm font-bold text-[#262626]'>{item.arrive}</span>
+              </Text>
 
-              <Flex alignItems='center' gap={4} style={{ marginLeft: 8 }}>
-                <Text style={{ color: 'var(--vapor-color-fg-muted)' }}>{item.durationMin}분</Text>
-              </Flex>
+              <Text style={{ marginLeft: 'auto' }} typography='subtitle2'>
+                {item.durationMin}분
+              </Text>
             </Flex>
 
             <Text
               style={{
-                marginTop: 8,
-                fontWeight: 600,
-                color: item.seatsLeft <= 3 ? '#D92D20' : '#12B76A',
+                color: item.seatsLeft <= 5 ? '#D92D20' : '#12B76A',
               }}
+              typography='subtitle2'
             >
               {item.seatsLeft}석 남음
             </Text>
