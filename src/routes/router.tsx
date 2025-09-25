@@ -8,6 +8,7 @@ import LoginPage from '@/pages/LoginPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import ReservationResultPage from '@/pages/ReservationResultPage';
 import ReservationsPage from '@/pages/ReservationsPage';
+import ReservationTicketPage from '@/pages/ReservationTicketPage';
 import RouteConfirmPage from '@/pages/RouteConfirmPage';
 import RoutePage from '@/pages/RoutePage';
 import SeasonTicketCheckoutSuccessPage from '@/pages/SeasonTicketCheckoutSuccessPage';
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       { path: '/department', element: <DepartmentSelectPage /> },
       { path: '/reservations', element: <ReservationsPage /> },
       { path: '/success-payment', element: <SeasonTicketCheckoutSuccessPage /> },
+      { path: '/reservations/:reservationId/ticket', element: <ReservationTicketPage /> },
     ],
   },
 ]);
