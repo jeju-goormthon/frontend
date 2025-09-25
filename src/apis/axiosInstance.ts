@@ -1,7 +1,7 @@
 import type { InternalAxiosRequestConfig } from 'axios';
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api-donghang.klr.kr';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://api-donghang.klr.kr';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: BASE_URL,
