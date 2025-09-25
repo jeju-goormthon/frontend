@@ -91,10 +91,45 @@ export default function RouteConfirmPage() {
     }
   };
 
-  const initiateTossPayment = () => {
-    // TODO: 토스페이 결제 연동
-    // 실제 구현 시에는 토스페이 SDK를 사용하여 결제 요청
-    alert('토스페이 결제를 시작합니다. (실제 구현 예정)');
+  const initiateTossPayment = async () => {
+    if (!selectedRoute || !selectedDate) {
+      alert('노선 정보가 없습니다.');
+      return;
+    }
+
+    try {
+      // 토스페이먼츠 SDK 초기화
+      const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
+      if (!clientKey) {
+        alert('토스페이 클라이언트 키가 설정되지 않았습니다.');
+        return;
+      }
+
+      const tossPayments = window.TossPayments(clientKey);
+
+      // 고유한 주문 ID 생성 (날짜 + 노선 ID + 랜덤값)
+      const orderId = `ORDER_${Date.now()}_${selectedRoute.id}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // 결제 요청
+      await tossPayments.requestPayment('카드', {
+        amount: selectedRoute.price || 3000, // 기본 가격 3000원
+        orderId: orderId,
+        orderName: `${selectedRoute.pickupLocation} → ${selectedRoute.hospitalName}`,
+        customerName: '구매자', // 실제로는 사용자 정보에서 가져와야 함
+        successUrl: `${window.location.origin}/success-payment`,
+        failUrl: `${window.location.origin}/success-payment`,
+        currency: 'KRW',
+        flowMode: 'DEFAULT',
+      });
+    } catch (error: any) {
+      console.error('토스페이 결제 오류:', error);
+      if (error.code === 'USER_CANCEL') {
+        // 사용자가 결제를 취소한 경우
+        alert('결제가 취소되었습니다.');
+      } else {
+        alert('결제 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    }
   };
 
   // 로딩 상태나 데이터가 없으면 로딩 표시

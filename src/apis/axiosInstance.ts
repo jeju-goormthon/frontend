@@ -6,6 +6,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://api-donghang.klr.k
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

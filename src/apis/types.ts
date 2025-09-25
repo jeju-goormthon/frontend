@@ -92,12 +92,17 @@ export interface RouteResponse {
   remainedSeat: number;
   totalSeat: number;
   pickupLocation: string;
+  price?: number; // 선택적 필드 추가
 }
 
 // Reservation API Types
 export interface CreateReservationRequest {
   routeId: number;
   reservationDate: string; // format: date
+  // 토스페이 결제 정보 (선택적)
+  paymentKey?: string;
+  orderId?: string;
+  amount?: number;
 }
 
 export interface ReservationResponse {
