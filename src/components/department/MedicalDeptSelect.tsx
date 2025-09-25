@@ -27,7 +27,7 @@ export default function MedicalDeptSelect({ name = 'dept' }: { name?: string }) 
   return (
     <RadioGroup.Root
       aria-label='진료과목 선택'
-      className='space-y-3'
+      className='gap-v-150'
       name={name}
       value={value} // ✅ 컨트롤드
       onValueChange={(val) => setValue(String(val))} // ✅ event 무시

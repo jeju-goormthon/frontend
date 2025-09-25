@@ -109,7 +109,7 @@ export default function HomePrimaryActionsGrid() {
           onClick={() => navigate('/department')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-foreground-normal)' }}>
-            진료과목 변경
+            진료과목 선택
           </span>
 
           <ChevronRightOutlineIcon
