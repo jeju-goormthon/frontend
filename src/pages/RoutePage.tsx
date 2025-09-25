@@ -14,7 +14,7 @@ export default function RoutePage() {
 
   return (
     <div className='relative flex min-h-screen flex-col'>
-      <div className='sticky top-0 z-60'>
+      <div className='sticky top-0 z-70'>
         <BackHeader title='노선 선택' />
       </div>
       <div className='sticky top-0 z-60 bg-white'>
