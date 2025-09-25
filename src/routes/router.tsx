@@ -1,15 +1,16 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import RootFrame from '@/layouts/RootFrame';
+import DepartmentSelectPage from '@/pages/DepartmentSelectPage';
 import HomePage from '@/pages/HomePage';
 import KakaoCallbackPage from '@/pages/KakaoCallbackPage';
 import LoginPage from '@/pages/LoginPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import ReservationResultPage from '@/pages/ReservationResultPage';
+import ReservationsPage from '@/pages/ReservationsPage';
 import RouteConfirmPage from '@/pages/RouteConfirmPage';
 import RoutePage from '@/pages/RoutePage';
 import SeasonTicketPage from '@/pages/SeasonTicketPage';
-import Test from '@/pages/Test';
 
 export const router = createBrowserRouter([
   {
@@ -24,7 +25,8 @@ export const router = createBrowserRouter([
       { path: '/reservation-result', element: <ReservationResultPage /> },
       { path: '*', element: <NotFoundPage /> },
       { path: '/oauth/callback', element: <KakaoCallbackPage /> },
-      { path: '/test', element: <Test /> },
+      { path: '/departments/select', element: <DepartmentSelectPage /> },
+      { path: '/reservations', element: <ReservationsPage /> },
     ],
   },
 ]);
