@@ -42,7 +42,7 @@ export default function HomePrimaryActionsGrid() {
             ...cardRadius,
             background: 'linear-gradient(140deg, #3174DC 0%, #F1F7FF 129.14%)',
           }}
-          onClick={() => navigate('/routes')}
+          onClick={() => navigate('/route')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-white)' }}>
             노선 선택
@@ -89,7 +89,7 @@ export default function HomePrimaryActionsGrid() {
         <Button
           className={cardBase}
           style={{ ...cardRadius, background: '#F1F7FF' }}
-          onClick={() => navigate('/passes')}
+          onClick={() => navigate('/season-ticket')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-foreground-normal)' }}>
             정기권 관리
