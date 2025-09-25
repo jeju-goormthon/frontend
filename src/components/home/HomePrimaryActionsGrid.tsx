@@ -67,10 +67,10 @@ export default function HomePrimaryActionsGrid() {
             ...cardRadius,
             background: 'linear-gradient(157deg, #CEE3FF 14.83%, #B5D4FF 55.94%, #3174DC 127%)',
           }}
-          onClick={() => navigate('/tickets')}
+          onClick={() => navigate('/reservations')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-foreground-normal)' }}>
-            탑승권 확인
+            예약 확인
           </span>
 
           <picture aria-hidden>
