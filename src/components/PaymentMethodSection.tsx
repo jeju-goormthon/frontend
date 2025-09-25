@@ -1,4 +1,4 @@
-import { Radio, RadioGroup, Text } from '@vapor-ui/core';
+import { Button, Radio, RadioGroup, Text } from '@vapor-ui/core';
 
 import KakaoPayIcon from '@/assets/icons/KakaoPayIcon';
 import discount_message from '@/assets/images/discount_message.webp';
@@ -68,13 +68,10 @@ export default function PaymentMethodSection({
               </div>
             ) : (
               <div className='flex items-center justify-between'>
-                <p className='text-[15px] text-[#5B5B5B]'>이용 중인 정기권이 없습니다</p>
-                <button
-                  className='rounded-full border border-[#D0D5DD] px-3 py-1.5 text-sm font-semibold text-[#2F6CF6]'
-                  type='button'
-                >
+                <p className='leading-v-75 tracking-v-100 text-sm text-[#262626]'>이용 중인 정기권이 없습니다</p>
+                <Button className='leading-v-75 tracking-v-100 rounded-lg border border-[#1D5ABA] bg-[#CEE3FF] px-2 py-0.5 font-medium text-[#0E47A3]'>
                   정기권 구매
-                </button>
+                </Button>
               </div>
             )}
           </div>
