@@ -5,17 +5,6 @@ import socialLoginMsgWebp from '@/assets/images/social_login_message.webp';
 import BackHeader from '@/components/BackHeader';
 
 export default function LoginPage() {
-  const handleKakaoLogin = () => {
-    // 카카오 로그인 URL로 리다이렉트
-    const kakaoLoginUrl = import.meta.env.VITE_KAKAO_URI || 'https://api-donghang.klr.kr/oauth2/authorization/kakao';
-    window.location.href = kakaoLoginUrl;
-  };
-
-  const handleGeneralLogin = () => {
-    // TODO: 일반 로그인 처리 (현재는 임시)
-    console.log('일반 로그인 버튼 클릭');
-  };
-
   return (
     <div className='min-h-screen bg-white'>
       {/* 헤더 */}
@@ -53,7 +42,10 @@ export default function LoginPage() {
           aria-label='카카오로 시작하기'
           className='w-full rounded-xl bg-[#FEE500] py-4 text-center text-[16px] font-medium text-[#3C1E1E] active:translate-y-[1px]'
           type='button'
-          onClick={handleKakaoLogin}
+          onClick={() => {
+            // TODO: 카카오 로그인 핸들러 연결
+            // e.g. kakaoAuth.start();
+          }}
         >
           <img
             aria-hidden
@@ -73,7 +65,10 @@ export default function LoginPage() {
           aria-label='전화번호로 시작하기'
           className='w-full rounded-xl border border-[#E5E5EA] bg-white py-4 text-[16px] font-medium text-[#1E293B] active:translate-y-[1px]'
           type='button'
-          onClick={handleGeneralLogin}
+          onClick={() => {
+            // TODO: 전화번호 로그인 라우팅/모달 열기
+            // e.g. navigate('/auth/phone');
+          }}
         >
           <img
             aria-hidden
