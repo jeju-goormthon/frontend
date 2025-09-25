@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import RootFrame from '@/layouts/RootFrame';
+import DepartmentSelectPage from '@/pages/DepartmentSelectPage';
 import HomePage from '@/pages/HomePage';
 import KakaoCallbackPage from '@/pages/KakaoCallbackPage';
 import LoginPage from '@/pages/LoginPage';
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: '/reservation-result', element: <ReservationResultPage /> },
       { path: '*', element: <NotFoundPage /> },
       { path: '/oauth/callback', element: <KakaoCallbackPage /> },
+      { path: '/departments/select', element: <DepartmentSelectPage /> },
     ],
   },
 ]);

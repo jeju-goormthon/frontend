@@ -10,7 +10,13 @@ interface NavButtonProps {
 
 export default function NavButton({ onClick, label = '다음', className, disabled }: NavButtonProps) {
   return (
-    <Button stretch className={twMerge('px-6', className)} disabled={disabled} size='xl' onClick={onClick}>
+    <Button
+      stretch
+      className={twMerge('rounded-xl px-6 py-7', className)}
+      disabled={disabled}
+      size='xl'
+      onClick={onClick}
+    >
       {label}
     </Button>
   );
