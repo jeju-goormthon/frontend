@@ -149,7 +149,7 @@ export default function RouteDateStrip({
 
   // ── UI ───────────────────────────────────────────────────────
   return (
-    <div className='w-full border-b-[10px] border-[#F7F7F7] py-5'>
+    <div className='x w-full border-b-1 border-[#F7F7F7] py-5 shadow-xs'>
       {/* 상단: 월 + 드롭다운 */}
       <div className='relative mb-4 flex items-center gap-0 pl-6'>
         <div className='text-sm font-semibold'>{format(month, 'M월', { locale: ko })}</div>
