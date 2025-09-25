@@ -17,7 +17,6 @@ export default function TermsAgreement({ onChange }: Props) {
   });
 
   const allChecked = useMemo(() => Object.values(items).every(Boolean), [items]);
-  const isIndeterminate = useMemo(() => Object.values(items).some(Boolean) && !allChecked, [items, allChecked]);
 
   const setAll = (checked: boolean) => {
     const next = {
