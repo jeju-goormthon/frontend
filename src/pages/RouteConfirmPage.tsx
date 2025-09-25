@@ -5,6 +5,7 @@ import BackHeader from '@/components/BackHeader';
 import NavButton from '@/components/NavButton';
 import PaymentMethodSection from '@/components/PaymentMethodSection';
 import RouteSummaryCard from '@/components/RouteSummaryCard';
+import TermsAgreement from '@/components/terms/TermsAgreement';
 
 export default function RouteConfirmPage() {
   // ═══════════════ 결제 관련 상태 관리 ═══════════════
@@ -92,6 +93,7 @@ export default function RouteConfirmPage() {
           </Text>
         </HStack>
         <div className='h-2.5 bg-[#F7F7F7]' />
+        <TermsAgreement />
       </div>
       <div className='sticky bottom-0 z-50 px-6 pt-2.5 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         <NavButton
