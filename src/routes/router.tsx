@@ -3,6 +3,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import RootFrame from '@/layouts/RootFrame';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
+import NotFoundPage from '@/pages/NotFoundPage';
+import RouteConfirmPage from '@/pages/RounteConfirmPage';
 import RoutePage from '@/pages/RoutePage';
 import SeasonTicketPage from '@/pages/SeasonTicketPage';
 
@@ -14,7 +16,9 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/route', element: <RoutePage /> },
+      { path: '/route/confirm', element: <RouteConfirmPage /> },
       { path: '/season-ticket', element: <SeasonTicketPage /> },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ]);
