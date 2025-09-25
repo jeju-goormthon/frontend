@@ -57,13 +57,13 @@ export default function ReservationResultPage() {
               </Badge>
             </HStack>
 
-            <Text className='leading-v-75 tracking-v-100 mb-1' typography='subtitle1'>
+            <Text className='leading-v-75 tracking-v-100 mb-1 text-base' typography='subtitle1'>
               <span className='pr-2 text-[#959595]'>탑승시간</span> {reservation.time}
             </Text>
-            <Text className='leading-v-75 tracking-v-100 mb-1' typography='subtitle1'>
+            <Text className='leading-v-75 tracking-v-100 mb-1 text-base' typography='subtitle1'>
               <span className='pr-2 text-[#959595]'>출발장소</span> {reservation.departure}
             </Text>
-            <Text className='leading-v-75 tracking-v-100' typography='subtitle1'>
+            <Text className='leading-v-75 tracking-v-100 text-base' typography='subtitle1'>
               <span className='pr-2 text-[#959595]'>진료과목</span> {reservation.department}
             </Text>
 
