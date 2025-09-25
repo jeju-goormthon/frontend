@@ -14,10 +14,10 @@ export default function RoutePage() {
 
   return (
     <div className='relative flex min-h-screen flex-col'>
-      <div className='sticky top-0 z-50'>
+      <div className='sticky top-0 z-60'>
         <BackHeader title='노선 선택' />
       </div>
-      <div className='sticky top-0 z-[60] bg-white'>
+      <div className='sticky top-0 z-60 bg-white'>
         <RouteDateStrip
           month={month}
           value={date}

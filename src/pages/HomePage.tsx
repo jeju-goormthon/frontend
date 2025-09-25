@@ -5,7 +5,7 @@ import UpcomingReservationCard from '@/components/UpcomingReservationCard';
 export default function HomePage() {
   return (
     <div>
-      <div className='sticky top-0 z-50 bg-white'>
+      <div className='sticky top-0 z-60 bg-white'>
         <Header />
       </div>
       <HomeHeroSection />
