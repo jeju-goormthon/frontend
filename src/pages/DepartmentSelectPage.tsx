@@ -18,7 +18,7 @@ export default function DepartmentSelectPage() {
         <DeptSelectMsg />
         <MedicalDeptSelect />
       </div>
-      <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
+      <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-3 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         <NavButton label='저장' onClick={() => navigate('/')} />
       </div>
     </div>

@@ -30,7 +30,7 @@ export default function RoutePage() {
         {/* 아래엔 선택된 날짜의 노선 리스트 */}
         <RouteSelectList />
       </div>
-      <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
+      <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-3 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         <NavButton label='다음' onClick={() => navigate('/route/confirm')} />
       </div>
     </div>

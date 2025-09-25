@@ -80,9 +80,7 @@ export default function SeasonTicketCheckoutSuccessPage() {
   }, []);
 
   const goReminderSetting = () => {
-    // TODO: 알림 권한/설정 페이지로 이동 로직
-    // 예시: navigate('/settings/notifications');
-    navigate(-1); // 임시
+    navigate('/'); // 임시
   };
 
   return (
