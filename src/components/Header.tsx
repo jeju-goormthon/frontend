@@ -7,7 +7,7 @@ export default function Header() {
       {/* TODO: 로고 자리 */}
       <Text>로고 자리</Text>
       {/* TODO: 마이페이지 있을 시 버튼으로 대체 */}
-      <UserOutlineIcon size={22} />
+      <UserOutlineIcon fill='#5D5D5D' size={22} />
     </HStack>
   );
 }
