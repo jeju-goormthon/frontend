@@ -200,7 +200,7 @@ function RouteOptionCard({ item, checked, onSelect }: { item: RouteItem; checked
                 도착 <span className='text-sm font-bold text-[#262626]'>{item.arrive}</span>
               </Text>
 
-              <Text style={{ marginLeft: 'auto' }} typography='subtitle2'>
+              <Text className='pl-v-150' typography='subtitle2'>
                 {item.durationMin}분
               </Text>
             </Flex>
@@ -211,7 +211,7 @@ function RouteOptionCard({ item, checked, onSelect }: { item: RouteItem; checked
               }}
               typography='subtitle2'
             >
-              {item.seatsLeft}석 남음
+              {item.seatsLeft}/20 석
             </Text>
           </Box>
         </Flex>
