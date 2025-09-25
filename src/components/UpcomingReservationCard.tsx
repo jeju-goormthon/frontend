@@ -96,7 +96,7 @@ export default function UpcomingReservationCard() {
         alignItems='center'
         aria-label='예약 상세 보기'
         borderRadius='$500'
-        className='h-[106px] cursor-pointer self-stretch border-[1.5px] border-[#3174DC] bg-white hover:brightness-95 active:brightness-90'
+        className='h-[106px] cursor-pointer self-stretch border-[1.5px] border-[#F0F0F0] bg-white hover:brightness-95 active:brightness-90'
         display='flex'
         flexDirection='row'
         justifyContent='space-between'
