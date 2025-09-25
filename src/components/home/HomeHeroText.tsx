@@ -5,7 +5,7 @@ export default function HomeHeroText() {
     <Text typography='heading3'>
       제주병원 가는 길,
       <br />
-      OO버스로 더 간편하게
+      동행이음버스로 더 간편하게
     </Text>
   );
 }
