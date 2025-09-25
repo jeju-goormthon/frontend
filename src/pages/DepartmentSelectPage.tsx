@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BackHeader from '@/components/BackHeader';
 import NavButton from '@/components/NavButton';
 
-export default function RoutePage() {
+export default function DepartmentSelectPage() {
   const navigate = useNavigate();
 
   return (
