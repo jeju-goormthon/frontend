@@ -17,6 +17,7 @@ interface RouteSelectionState {
   // Reservation state
   reservationData: {
     routeId?: number;
+    reservationId?: number;
     reservationDate?: string;
     paymentMethod?: PaymentMethod;
     amount?: number;

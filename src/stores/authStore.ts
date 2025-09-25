@@ -75,6 +75,16 @@ export const useAuthStore = create<AuthState>()(
         if (state?.accessToken) {
           axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${state.accessToken}`;
         }
+
+        // user 객체가 API 응답 래퍼 형태로 저장된 경우를 정리
+        if (state?.user && typeof state.user === 'object' && 'data' in state.user) {
+          const userData = (state.user as any).data;
+          state.user = userData;
+          state.medicalDepartment = userData?.medicalDepartment || null;
+        } else if (state?.user && state.user.medicalDepartment) {
+          // 정상적인 user 객체인 경우 medicalDepartment 동기화
+          state.medicalDepartment = state.user.medicalDepartment;
+        }
       },
     },
   ),

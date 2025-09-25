@@ -24,10 +24,15 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
-      { path: '/route', element: <RoutePage /> },
-      { path: '/route/confirm', element: <RouteConfirmPage /> },
-      { path: '/season-ticket', element: <SeasonTicketPage /> },
-      { path: '/reservation-result', element: <ReservationResultPage /> },
+      // 인증이 필요한 라우트들
+      {
+        path: '/reservation-result',
+        element: (
+          <AuthGuard>
+            <ReservationResultPage />
+          </AuthGuard>
+        ),
+      },
       { path: '/payment/success', element: <PaymentSuccessPage /> },
       { path: '/payment/fail', element: <PaymentFailPage /> },
       { path: '*', element: <NotFoundPage /> },

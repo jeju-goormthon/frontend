@@ -4,9 +4,9 @@ import { InfoCircleOutlineIcon } from '@vapor-ui/icons';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { getMyReservations } from '@/apis/reservations';
+import { getReservationDetail } from '@/apis/reservations';
 import type { ReservationResponse } from '@/apis/types';
 import Header from '@/components/Header';
 import { useRouteStore } from '@/stores/routeStore';
@@ -15,72 +15,35 @@ import SuccessIcon from '../assets/icons/SuccessIcon.svg';
 
 export default function ReservationResultPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { clearAll } = useRouteStore();
   const [reservation, setReservation] = useState<ReservationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchLatestReservation() {
+    async function fetchReservation() {
       try {
         setLoading(true);
-        const response = await getMyReservations();
+        setError(null);
 
-        // Handle different API response formats
-        let reservations: ReservationResponse[] = [];
-        if (Array.isArray(response)) {
-          reservations = response;
-        } else if (response && (response as any).data && Array.isArray((response as any).data)) {
-          reservations = (response as any).data;
-        } else if (response && (response as any).success && Array.isArray((response as any).data)) {
-          reservations = (response as any).data;
+        const reservationId = searchParams.get('reservationId');
+        if (!reservationId) {
+          throw new Error('예약 ID가 필요합니다.');
         }
 
-        // Get the most recent reservation (first in list, assuming sorted by creation date)
-        if (reservations.length > 0) {
-          setReservation(reservations[0]);
-        } else {
-          // Create mock reservation data for testing if API fails
-          const mockReservation: ReservationResponse = {
-            id: 1,
-            reservationNumber: '2025-0001',
-            reservationDate: '2025-01-27',
-            hospitalName: '제주대학교병원',
-            startTime: '09:00:00',
-            pickupLocation: '애월읍사무소 앞',
-            medicalDepartment: 'INTERNAL_MEDICINE',
-            status: 'CONFIRMED',
-            boarded: false,
-            qrCode: 'MOCK_QR_CODE',
-          };
-          console.log('Using mock reservation data for testing');
-          setReservation(mockReservation);
-        }
+        const reservationData = await getReservationDetail(Number(reservationId));
+        setReservation(reservationData);
       } catch (err) {
         console.error('Failed to fetch reservation:', err);
-        // Use mock data as fallback
-        const mockReservation: ReservationResponse = {
-          id: 1,
-          reservationNumber: '2025-0001',
-          reservationDate: '2025-01-27',
-          hospitalName: '제주대학교병원',
-          startTime: '09:00:00',
-          pickupLocation: '애월읍사무소 앞',
-          medicalDepartment: 'INTERNAL_MEDICINE',
-          status: 'CONFIRMED',
-          boarded: false,
-          qrCode: 'MOCK_QR_CODE',
-        };
-        console.log('Using mock reservation data due to API error');
-        setReservation(mockReservation);
-        setError(`API 연결 실패 - 테스트 데이터로 동작 중: ${err instanceof Error ? err.message : '알 수 없는 오류'}`);
+        setError(err instanceof Error ? err.message : '예약 정보를 불러올 수 없습니다.');
       } finally {
         setLoading(false);
       }
     }
 
-    fetchLatestReservation();
-  }, []);
+    fetchReservation();
+  }, [searchParams]);
 
   // Calculate days until reservation
   const getDaysUntilReservation = (reservationDate: string) => {
