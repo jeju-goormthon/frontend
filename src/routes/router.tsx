@@ -4,8 +4,8 @@ import RootFrame from '@/layouts/RootFrame';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+import RouteConfirmPage from '@/pages/RouteConfirmPage';
 import ReservationResultPage from '@/pages/ReservationResultPage';
-import RouteConfirmPage from '@/pages/RounteConfirmPage';
 import RoutePage from '@/pages/RoutePage';
 import SeasonTicketPage from '@/pages/SeasonTicketPage';
 
