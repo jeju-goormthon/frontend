@@ -3,6 +3,7 @@ import { startOfMonth } from 'date-fns';
 import { useState } from 'react';
 
 import RouteDateStrip from '@/components/route/RouteDateStrip';
+import RouteSelectList from '@/components/route/RouteSelectList';
 
 export default function RoutePage() {
   const [month, setMonth] = useState(startOfMonth(new Date()));
@@ -19,6 +20,7 @@ export default function RoutePage() {
         />
       </div>
       {/* 아래엔 선택된 날짜의 노선 리스트 */}
+      <RouteSelectList />
     </div>
   );
 }
