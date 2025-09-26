@@ -70,8 +70,9 @@ export default function LoginPage() {
 
         {/* 전화번호로 시작하기 (아웃라인 버튼) */}
         <button
+          disabled
           aria-label='전화번호로 시작하기'
-          className='w-full rounded-xl border border-[#E5E5EA] bg-white py-4 text-[16px] font-medium text-[#1E293B] active:translate-y-[1px]'
+          className='w-full rounded-xl border border-[#E5E5EA] bg-white py-4 text-[16px] font-medium text-[#1E293B] active:translate-y-[1px] hover:enabled:bg-[#F9FAFB] disabled:cursor-not-allowed not-last:disabled:opacity-50'
           type='button'
           onClick={handleGeneralLogin}
         >
