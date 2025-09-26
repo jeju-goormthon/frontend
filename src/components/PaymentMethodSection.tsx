@@ -1,4 +1,5 @@
 import { Button, Radio, RadioGroup, Text } from '@vapor-ui/core';
+import { useNavigate } from 'react-router-dom';
 
 import KakaoPayIcon from '@/assets/icons/KakaoPayIcon';
 import discount_message from '@/assets/images/discount_message.webp';
@@ -28,6 +29,7 @@ export default function PaymentMethodSection({
   onPaymentMethodChange,
   onPaymentServiceChange,
 }: Props) {
+  const navigate = useNavigate();
   return (
     <section className='space-y-3'>
       {/* ═══════════════ 결제 수단 선택 RadioGroup ═══════════════ */}
@@ -69,7 +71,12 @@ export default function PaymentMethodSection({
             ) : (
               <div className='flex items-center justify-between'>
                 <p className='leading-v-75 tracking-v-100 text-sm text-[#262626]'>이용 중인 정기권이 없습니다</p>
-                <Button className='leading-v-75 tracking-v-100 rounded-lg border border-[#1D5ABA] bg-[#CEE3FF] px-2 py-0.5 font-medium text-[#0E47A3]'>
+                <Button
+                  className='leading-v-75 tracking-v-100 rounded-lg border border-[#1D5ABA] bg-[#CEE3FF] px-2 py-0.5 font-medium text-[#0E47A3]'
+                  onClick={() => {
+                    navigate('/season-ticket');
+                  }}
+                >
                   정기권 구매
                 </Button>
               </div>
@@ -94,6 +101,7 @@ export default function PaymentMethodSection({
             {/* ═══════ 결제 서비스 선택 RadioGroup (카카오페이/토스페이) ═══════ */}
             <RadioGroup.Root
               className='grid grid-cols-2 gap-3'
+              defaultValue='toss'
               name='payment-service'
               orientation='horizontal'
               value={selectedPaymentService}
@@ -102,7 +110,7 @@ export default function PaymentMethodSection({
               {/* 카카오페이 옵션 */}
               <label className='flex cursor-pointer items-center justify-between'>
                 <div className='flex items-center gap-2'>
-                  <Radio.Root value='kakao' />
+                  <Radio.Root disabled value='kakao' />
                   <span className='inline-flex items-center gap-2'>
                     <KakaoPayIcon />
                     <span className='leading-v-75 tracking-v-100 text-sm font-medium text-[#262626]'>카카오페이</span>

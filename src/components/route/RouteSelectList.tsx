@@ -1,5 +1,5 @@
 // RouteSelectList.tsx
-import { Box, Flex, Radio, RadioGroup, Text, Tooltip } from '@vapor-ui/core';
+import { Box, Flex, Radio, RadioGroup, Text } from '@vapor-ui/core';
 import { LocationOutlineIcon } from '@vapor-ui/icons';
 import { useEffect, useState } from 'react';
 
@@ -9,6 +9,22 @@ import RightShootIcon from '@/assets/icons/RightShootIcon';
 import { useRouteStore } from '@/stores/routeStore';
 
 type SortKey = 'fast' | 'nearest';
+
+// 노선 정렬 함수
+const sortRoutes = (routes: RouteResponse[], sortKey: SortKey): RouteResponse[] => {
+  const sortedRoutes = [...routes];
+
+  if (sortKey === 'fast') {
+    // 빠른 출발순: startAt 기준 오름차순 정렬
+    return sortedRoutes.sort((a, b) => {
+      const timeA = a.startAt.localeCompare(b.startAt);
+      return timeA;
+    });
+  } else {
+    // 최단 거리순: expectedTime(도보 시간) 기준 오름차순 정렬
+    return sortedRoutes.sort((a, b) => a.expectedTime - b.expectedTime);
+  }
+};
 
 export default function RouteSelectList() {
   const { selectedRoute, setSelectedRoute, setSortBy } = useRouteStore();
@@ -52,7 +68,10 @@ export default function RouteSelectList() {
         }
 
         console.log('Processed route data:', routeData); // Debug log
-        setRoutes(routeData);
+
+        // 클라이언트 사이드 정렬 적용
+        const sortedRoutes = sortRoutes(routeData, sortKey);
+        setRoutes(sortedRoutes);
       } catch (err) {
         console.error('Failed to fetch routes:', err);
         // Use mock data as fallback for development/testing
@@ -90,7 +109,8 @@ export default function RouteSelectList() {
         ];
 
         console.log('Using mock data due to API error');
-        setRoutes(mockRoutes);
+        const sortedMockRoutes = sortRoutes(mockRoutes, sortKey);
+        setRoutes(sortedMockRoutes);
         setError(`API 연결 실패 - 테스트 데이터로 동작 중: ${err instanceof Error ? err.message : '알 수 없는 오류'}`);
       } finally {
         setLoading(false);
@@ -229,8 +249,6 @@ function RouteOptionCard({
     return timeString.substring(0, 5);
   };
 
-  // Calculate walking time (mock data for now)
-  const walkMin = Math.floor(Math.random() * 10) + 3; // 3-12 minutes
   const shadow = checked
     ? '0 0 0 1px rgba(49,116,220,0.04), 0 8px 20px rgba(0,0,0,0.04)'
     : 'inset 0 0 0 1px rgba(0,0,0,0.02)';
@@ -257,39 +275,11 @@ function RouteOptionCard({
             <Flex alignItems='center' justifyContent='space-between'>
               <Text style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.2 }}>{route.pickupLocation}</Text>
 
-              {/* ⬇️ 아이콘을 버튼으로, Tooltip 적용 */}
-              <Tooltip.Root delay={0}>
-                <Tooltip.Trigger
-                  render={
-                    <button
-                      aria-label='정류장 위치를 확인할 수 있어요'
-                      className='inline-grid h-8 w-8 place-items-center rounded-sm hover:bg-black/5 focus:ring-2 focus:ring-[#3174DC]/50 focus:outline-none'
-                      type='button'
-                      onClick={(e) => {
-                        e.stopPropagation(); // 카드 선택 이벤트와 분리
-                        // TODO: 실제 지도로 이동할 경로로 바꿔주세요
-                        window.location.href = `/map?station=${encodeURIComponent(route.id.toString())}`;
-                      }}
-                    >
-                      <LocationOutlineIcon className='text-[#393939]' />
-                    </button>
-                  }
-                />
-                <Tooltip.Portal>
-                  <Tooltip.Positioner align='end' side='top'>
-                    <Tooltip.Content
-                      // 말풍선(회색 알약 + 꼬리) 스타일
-                      className='rounded-sm bg-[#4A4A4A] px-3 py-1 text-xs font-normal text-white shadow-lg'
-                    >
-                      정류장 위치를 확인할 수 있어요
-                    </Tooltip.Content>
-                  </Tooltip.Positioner>
-                </Tooltip.Portal>
-              </Tooltip.Root>
+              <LocationOutlineIcon className='text-[#393939]' />
             </Flex>
 
             <Text style={{ marginTop: 4, color: 'var(--vapor-color-fg-muted)', fontSize: 12, fontWeight: 500 }}>
-              <span className='font-medium text-[#959595] select-none'>정류장까지</span> 도보 {walkMin}분
+              <span className='font-medium text-[#959595] select-none'>정류장까지</span> 도보 {route.expectedTime}분
             </Text>
             <Flex alignItems='center' className='select-none' gap={8}>
               <Text style={{ color: '#3174DC' }} typography='subtitle2'>
@@ -301,7 +291,14 @@ function RouteOptionCard({
                 도착 <span className='text-sm font-bold text-[#262626] select-none'>{formatTime(route.endAt)}</span>
               </Text>
               <Text className='pl-v-150 select-none' typography='subtitle2'>
-                {route.expectedTime}분
+                {(() => {
+                  const [startHour, startMin] = route.startAt.split(':').map(Number);
+                  const [endHour, endMin] = route.endAt.split(':').map(Number);
+                  const startTotalMin = startHour * 60 + startMin;
+                  const endTotalMin = endHour * 60 + endMin;
+                  return endTotalMin - startTotalMin;
+                })()}
+                분
               </Text>
             </Flex>
             <Text style={{ color: route.remainedSeat <= 5 ? '#D92D20' : '#12B76A' }} typography='subtitle2'>

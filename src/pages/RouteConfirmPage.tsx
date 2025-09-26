@@ -13,7 +13,8 @@ declare global {
 
 import { checkActivePass, getActivePass } from '@/apis/passes';
 import { createReservation } from '@/apis/reservations';
-import type { PassResponse, PaymentMethod } from '@/apis/types';
+import { getRouteDetail } from '@/apis/routes';
+import type { PassResponse, PaymentMethod, RouteResponse } from '@/apis/types';
 import BackHeader from '@/components/BackHeader';
 import NavButton from '@/components/NavButton';
 import PaymentMethodSection from '@/components/PaymentMethodSection';
@@ -36,16 +37,43 @@ export default function RouteConfirmPage() {
   } = useRouteStore();
 
   const [activePass, setActivePass] = useState<PassResponse | null>(null);
+  const [routeDetail, setRouteDetail] = useState<RouteResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tossPayments, setTossPayments] = useState<any>(null);
+  const [termsAgreed, setTermsAgreed] = useState(false);
 
-  // Redirect if no route selected
+  // Redirect if no route selected and fetch route detail
   useEffect(() => {
     if (!selectedRoute || !selectedDate) {
       navigate('/route');
       return;
     }
+
+    // Fetch route detail
+    async function fetchRouteDetail() {
+      try {
+        if (selectedRoute) {
+          const apiResponse = await getRouteDetail(selectedRoute.id);
+
+          // API 응답이 래퍼 형태인 경우 data 부분만 추출
+          const routeData =
+            apiResponse && typeof apiResponse === 'object' && 'data' in apiResponse
+              ? (apiResponse as any).data
+              : apiResponse;
+
+          setRouteDetail(routeData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch route detail:', err);
+        // Fall back to selectedRoute from store if API fails
+        if (selectedRoute) {
+          setRouteDetail(selectedRoute);
+        }
+      }
+    }
+
+    fetchRouteDetail();
   }, [selectedRoute, selectedDate, navigate]);
 
   // 토스페이먼츠 SDK 초기화
@@ -87,8 +115,17 @@ export default function RouteConfirmPage() {
   }, [setHasTicket]);
 
   // Don't render if no route data
-  if (!selectedRoute || !selectedDate) {
-    return null;
+  if (!selectedRoute || !selectedDate || !routeDetail) {
+    return (
+      <div className='relative flex min-h-screen flex-col'>
+        <div className='sticky top-0 z-60'>
+          <BackHeader title='노선 확인/결제' />
+        </div>
+        <div className='flex flex-1 items-center justify-center'>
+          <Text>노선 정보를 불러오는 중...</Text>
+        </div>
+      </div>
+    );
   }
 
   // Calculate payment amount
@@ -100,7 +137,7 @@ export default function RouteConfirmPage() {
   };
 
   const paymentAmount = calculateAmount();
-  const isPaymentDisabled = paymentMethod === 'ticket' && !hasTicket;
+  const isPaymentDisabled = (paymentMethod === 'ticket' && !hasTicket) || !termsAgreed;
 
   // Format selected date for display
   const formattedDate = format(selectedDate, 'yyyy.MM.dd(E)', { locale: ko });
@@ -111,7 +148,7 @@ export default function RouteConfirmPage() {
   };
 
   // 토스페이먼츠 결제 요청
-  const requestTossPayment = async () => {
+  const requestTossPayment = async (createdReservation: any) => {
     if (!tossPayments) {
       setError('결제 시스템이 준비되지 않았습니다.');
       return;
@@ -123,23 +160,24 @@ export default function RouteConfirmPage() {
     try {
       // 현재 URL을 기준으로 리다이렉트 URL 생성
       const currentOrigin = window.location.origin;
-      const successUrl = `${currentOrigin}/success-payment`;
-      const failUrl = `${currentOrigin}/success-payment`;
+      const successUrl = `${currentOrigin}/reservation-result?reservationId=${createdReservation.id}`;
+      const failUrl = `${currentOrigin}/reservation-result?reservationId=${createdReservation.id}`;
 
       // 예약 정보를 sessionStorage에 저장 (결제 완료 후 사용)
-      const reservationData = {
-        routeId: selectedRoute!.id,
+      const paymentData = {
+        reservationId: createdReservation.id,
+        routeId: selectedRoute?.id || 0,
         reservationDate: format(selectedDate!, 'yyyy-MM-dd'),
         paymentMethod: paymentService.toUpperCase() as PaymentMethod,
         amount: paymentAmount,
       };
-      sessionStorage.setItem('pendingReservation', JSON.stringify(reservationData));
+      sessionStorage.setItem('pendingReservation', JSON.stringify(paymentData));
 
       // 토스페이먼츠 결제창 호출
       await tossPayments.requestPayment('카드', {
         amount: paymentAmount,
         orderId: orderId,
-        orderName: `${selectedRoute!.pickupLocation} → ${selectedRoute!.hospitalName} 셔틀`,
+        orderName: `${selectedRoute?.pickupLocation || ''} → ${selectedRoute?.hospitalName || ''} 셔틀`,
         customerName: customerName,
         successUrl: successUrl,
         failUrl: failUrl,
@@ -162,35 +200,30 @@ export default function RouteConfirmPage() {
       setLoading(true);
       setError(null);
 
-      // Prepare reservation data
+      // 먼저 예약 생성
       const reservationData = {
         routeId: selectedRoute.id,
         reservationDate: format(selectedDate, 'yyyy-MM-dd'),
       };
 
+      const createdReservation = await createReservation(reservationData);
+      console.log('Reservation created:', createdReservation);
+
       // Store reservation info for next page
       setReservationData({
         ...reservationData,
+        reservationId: createdReservation.id,
         paymentMethod: paymentMethod === 'ticket' ? undefined : (paymentService.toUpperCase() as PaymentMethod),
         amount: paymentAmount,
       });
 
       if (paymentAmount === 0) {
-        // Free reservation with pass
-        try {
-          const reservation = await createReservation(reservationData);
-          console.log('Reservation created:', reservation);
-          navigate('/reservation-result');
-        } catch (reservationErr) {
-          console.error('Failed to create reservation:', reservationErr);
-          // For development, still navigate to show the flow
-          console.log('Mock reservation created for testing');
-          navigate('/reservation-result');
-        }
+        // 무료 예약 (패스 사용) - 바로 결과 페이지로
+        navigate(`/reservation-result?reservationId=${createdReservation.id}`, { replace: true });
       } else {
         // 결제가 필요한 경우 토스페이먼츠 결제 진행
         if (paymentService === 'toss') {
-          await requestTossPayment();
+          await requestTossPayment(createdReservation);
         } else if (paymentService === 'kakao') {
           // 카카오페이 결제는 나중에 구현
           setError('카카오페이 결제는 준비 중입니다.');
@@ -226,10 +259,10 @@ export default function RouteConfirmPage() {
           </HStack>
           {/* 출발지 + 도착지 */}
           <RouteSummaryCard
-            arriveName={`${selectedRoute.hospitalName}-내과`}
-            arriveTime={selectedRoute.endAt.substring(0, 5)}
-            departName={selectedRoute.pickupLocation}
-            departTime={selectedRoute.startAt.substring(0, 5)}
+            arriveName={routeDetail.hospitalName || ''}
+            arriveTime={routeDetail.endAt ? routeDetail.endAt.substring(0, 5) : ''}
+            departName={routeDetail.pickupLocation || ''}
+            departTime={routeDetail.startAt ? routeDetail.startAt.substring(0, 5) : ''}
           />
         </VStack>
         <div className='h-2.5 bg-[#F7F7F7]' />
@@ -274,7 +307,7 @@ export default function RouteConfirmPage() {
           </Text>
         </HStack>
         <div className='h-2.5 bg-[#F7F7F7]' />
-        <TermsAgreement />
+        <TermsAgreement onChange={(result) => setTermsAgreed(result.allAgreed)} />
       </div>
       <div className='sticky bottom-0 z-50 bg-white px-6 pt-2.5 pb-3 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
         {error && <Text style={{ color: '#D92D20', marginBottom: 8 }}>{error}</Text>}
