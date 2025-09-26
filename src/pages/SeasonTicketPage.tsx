@@ -1,6 +1,9 @@
 import { Badge, Box, Text, VStack } from '@vapor-ui/core';
-import { useState } from 'react';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
 
+import { checkActivePass, getActivePass, purchasePass } from '@/apis/passes';
+import type { PassResponse, PassType, PurchasePassRequest } from '@/apis/types';
 import BackHeader from '@/components/BackHeader';
 import NavButton from '@/components/NavButton';
 
@@ -21,14 +24,97 @@ const unselectedCard = 'border border-[#F0F0F0]';
 
 export default function SeasonTicketPage() {
   const [plan, setPlan] = useState<Plan>('1m');
+  const [hasTicket, setHasTicket] = useState(false);
+  const [currentTicket, setCurrentTicket] = useState<PassResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
 
-  // 임시 데이터 - 실제로는 API나 props로 받아올 예정
-  const hasTicket = true; // 정기권 보유 여부
-  const currentTicket = {
-    name: '1개월권',
-    period: '2025. 10. 26',
-    price: '15,000원',
-    paymentMethod: '카카오페이',
+  // 정기권 상태 확인
+  useEffect(() => {
+    async function fetchPassStatus() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const hasActivePass = await checkActivePass();
+        setHasTicket(hasActivePass);
+
+        if (hasActivePass) {
+          const activePass = await getActivePass();
+          setCurrentTicket(activePass);
+        }
+      } catch (err) {
+        console.error('Failed to fetch pass status:', err);
+        setError(err instanceof Error ? err.message : '정기권 상태 조회에 실패했습니다.');
+        setHasTicket(false);
+        setCurrentTicket(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPassStatus();
+  }, []);
+
+  // 정기권 타입에 따른 디스플레이 이름
+  const getPassTypeName = (passType: string) => {
+    switch (passType) {
+      case 'ONE_MONTH':
+        return '1개월권';
+      case 'THREE_MONTHS':
+        return '3개월권';
+      case 'SIX_MONTHS':
+        return '6개월권';
+      default:
+        return '정기권';
+    }
+  };
+
+  // 날짜 포매팅
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'yyyy. MM. dd');
+  };
+
+  // Plan을 PassType으로 변환
+  const planToPassType = (planType: Plan): PassType => {
+    switch (planType) {
+      case '1m':
+        return 'ONE_MONTH';
+      case '3m':
+        return 'THREE_MONTHS';
+      case '6m':
+        return 'SIX_MONTHS';
+    }
+  };
+
+  // 정기권 구매 처리
+  const handlePurchase = async () => {
+    try {
+      setPurchasing(true);
+      setError(null);
+
+      const selectedTicket = getTicketInfo(plan);
+      const passType = planToPassType(plan);
+
+      const purchaseRequest: PurchasePassRequest = {
+        passType,
+        paymentMethod: 'KAKAO_PAY',
+      };
+
+      await purchasePass(purchaseRequest);
+
+      // 결제 완료 알림
+      alert(`${selectedTicket.name} ${selectedTicket.price}이 카카오페이로 결제되었습니다.`);
+
+      // 페이지 새로고침하여 정기권 상태 업데이트
+      window.location.reload();
+    } catch (err) {
+      console.error('정기권 구매 실패:', err);
+      setError(err instanceof Error ? err.message : '정기권 구매에 실패했습니다.');
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   // 정기권 정보 매핑
@@ -66,6 +152,40 @@ export default function SeasonTicketPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className='relative flex min-h-screen flex-col'>
+        <div className='sticky top-0 z-60'>
+          <BackHeader title='정기권 관리' />
+        </div>
+        <div className='flex flex-1 items-center justify-center'>
+          <Text>정기권 상태를 로딩 중...</Text>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='relative flex min-h-screen flex-col'>
+        <div className='sticky top-0 z-60'>
+          <BackHeader title='정기권 관리' />
+        </div>
+        <div className='flex flex-1 items-center justify-center'>
+          <VStack alignItems='center' gap='$200'>
+            <Text style={{ color: '#D92D20' }}>{error}</Text>
+            <button
+              style={{ padding: '8px 16px', background: '#f0f0f0', borderRadius: '8px', border: 'none' }}
+              onClick={() => window.location.reload()}
+            >
+              다시 시도
+            </button>
+          </VStack>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='relative flex min-h-screen flex-col'>
       <div className='sticky top-0 z-60'>
@@ -74,12 +194,12 @@ export default function SeasonTicketPage() {
       <div className='flex-1 overflow-y-auto'>
         <VStack gap='$100' padding='$300'>
           {/* ═══════════════ 정기권 보유자 섹션 ═══════════════ */}
-          {hasTicket && (
+          {hasTicket && currentTicket && (
             <div>
               <div className='leading-v-75 tracking-v-100 py-5 font-semibold text-[#262626]'>나의 정기권</div>
               <Box className='rounded-2xl bg-[#F7F7F7] px-5 py-4'>
                 <div className='mb-3 flex items-center justify-between border-b border-[#E0E0E0] pb-3'>
-                  <Text typography='heading5'>{currentTicket.name}</Text>
+                  <Text typography='heading5'>{getPassTypeName(currentTicket.passType)}</Text>
                   <Badge className='rounded-full px-1.5'>이용중</Badge>
                 </div>
                 <div className='space-y-2'>
@@ -87,19 +207,19 @@ export default function SeasonTicketPage() {
                     <Text foreground='hint' typography='subtitle1'>
                       결제 예정일
                     </Text>
-                    <Text typography='subtitle1'>{currentTicket.period}</Text>
+                    <Text typography='subtitle1'>{formatDate(currentTicket.endDate)}</Text>
                   </div>
                   <div className='flex justify-between'>
                     <Text foreground='hint' typography='subtitle1'>
                       결제 예정금액
                     </Text>
-                    <Text typography='subtitle1'>{currentTicket.price}</Text>
+                    <Text typography='subtitle1'>{currentTicket.amount?.toLocaleString() || '0'}원</Text>
                   </div>
                   <div className='flex justify-between'>
                     <Text foreground='hint' typography='subtitle1'>
                       결제 수단
                     </Text>
-                    <Text typography='subtitle1'>{currentTicket.paymentMethod}</Text>
+                    <Text typography='subtitle1'>{currentTicket.paymentMethod || '카드'}</Text>
                   </div>
                 </div>
               </Box>
@@ -186,32 +306,11 @@ export default function SeasonTicketPage() {
       {/* ═══════════════ 결제하기 버튼 (정기권 미보유자용) ═══════════════ */}
       {!hasTicket && (
         <div className='sticky bottom-0 z-50 bg-white px-6 pt-3 pb-3 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
+          {error && <Text style={{ color: '#D92D20', marginBottom: 8 }}>{error}</Text>}
           <NavButton
-            label='결제하기'
-            onClick={() => {
-              const selectedTicket = getTicketInfo(plan);
-
-              // 결제 정보 콘솔 출력
-              console.log('=== 정기권 결제 정보 ===');
-              console.log('선택된 정기권:', selectedTicket.name);
-              console.log('결제 금액:', selectedTicket.price);
-              if (selectedTicket.monthlyPrice) {
-                console.log('월 단가:', selectedTicket.monthlyPrice);
-              }
-              if (selectedTicket.discount) {
-                console.log('할인율:', selectedTicket.discount);
-                console.log('원래 가격:', selectedTicket.originalPrice);
-              }
-
-              // Alert로 사용자에게 확인
-              let alertMessage = `${selectedTicket.name} ${selectedTicket.price}`;
-              if (selectedTicket.discount) {
-                alertMessage += ` (${selectedTicket.discount})`;
-              }
-              alertMessage += '으로 결제합니다.';
-
-              alert(alertMessage);
-            }}
+            disabled={purchasing}
+            label={purchasing ? '결제 처리중...' : '결제하기'}
+            onClick={handlePurchase}
           />
         </div>
       )}

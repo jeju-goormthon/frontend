@@ -219,7 +219,7 @@ export default function RouteConfirmPage() {
 
       if (paymentAmount === 0) {
         // 무료 예약 (패스 사용) - 바로 결과 페이지로
-        navigate(`/reservation-result?reservationId=${createdReservation.id}`);
+        navigate(`/reservation-result?reservationId=${createdReservation.id}`, { replace: true });
       } else {
         // 결제가 필요한 경우 토스페이먼츠 결제 진행
         if (paymentService === 'toss') {

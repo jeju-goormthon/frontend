@@ -5,6 +5,10 @@ import type { ApiResponse, PassResponse, PurchasePassRequest } from './types';
 export const purchasePass = async (data: PurchasePassRequest): Promise<PassResponse> => {
   try {
     const response = await axiosInstance.post('/api/passes/purchase', data);
+    // API 응답이 래퍼 구조인지 확인
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data;
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || '정기권 구매에 실패했습니다.');
@@ -15,6 +19,10 @@ export const purchasePass = async (data: PurchasePassRequest): Promise<PassRespo
 export const getMyPasses = async (): Promise<PassResponse[]> => {
   try {
     const response = await axiosInstance.get('/api/passes');
+    // API 응답이 래퍼 구조인지 확인
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data;
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || '정기권 목록 조회에 실패했습니다.');
@@ -25,6 +33,10 @@ export const getMyPasses = async (): Promise<PassResponse[]> => {
 export const checkActivePass = async (): Promise<boolean> => {
   try {
     const response = await axiosInstance.get('/api/passes/check');
+    // API 응답이 래퍼 구조인지 확인
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data;
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || '정기권 보유 여부 확인에 실패했습니다.');
@@ -35,6 +47,10 @@ export const checkActivePass = async (): Promise<boolean> => {
 export const getActivePass = async (): Promise<PassResponse> => {
   try {
     const response = await axiosInstance.get('/api/passes/active');
+    // API 응답이 래퍼 구조인지 확인
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data;
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || '활성 정기권 조회에 실패했습니다.');
@@ -45,6 +61,10 @@ export const getActivePass = async (): Promise<PassResponse> => {
 export const cancelPass = async (passId: number): Promise<ApiResponse> => {
   try {
     const response = await axiosInstance.delete(`/api/passes/${passId}`);
+    // API 응답이 래퍼 구조인지 확인
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data;
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || '정기권 취소에 실패했습니다.');
