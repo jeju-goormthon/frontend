@@ -4,7 +4,7 @@ import type { ApiResponse, PassResponse, PurchasePassRequest } from './types';
 // POST /api/passes/purchase - 정기권 구매
 export const purchasePass = async (data: PurchasePassRequest): Promise<PassResponse> => {
   try {
-    const response = await axiosInstance.post('/api/passes/purchase', data);
+    const response = await axiosInstance.post('/api/passes', data);
     // API 응답이 래퍼 구조인지 확인
     if (response.data && typeof response.data === 'object' && 'data' in response.data) {
       return response.data.data;

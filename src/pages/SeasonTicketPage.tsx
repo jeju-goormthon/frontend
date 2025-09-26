@@ -2,8 +2,15 @@ import { Badge, Box, Text, VStack } from '@vapor-ui/core';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
+// 토스페이먼츠 타입 정의
+declare global {
+  interface Window {
+    TossPayments: any;
+  }
+}
+
 import { checkActivePass, getActivePass, purchasePass } from '@/apis/passes';
-import type { PassResponse, PassType, PurchasePassRequest } from '@/apis/types';
+import type { PassResponse, PassType, PaymentMethod, PurchasePassRequest } from '@/apis/types';
 import BackHeader from '@/components/BackHeader';
 import NavButton from '@/components/NavButton';
 
@@ -29,6 +36,24 @@ export default function SeasonTicketPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState(false);
+  const [tossPayments, setTossPayments] = useState<any>(null);
+  const [paymentService] = useState<'toss' | 'kakao'>('toss');
+
+  // 토스페이먼츠 SDK 초기화
+  useEffect(() => {
+    const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
+    if (!clientKey) {
+      console.error('토스페이먼츠 클라이언트 키가 설정되지 않았습니다.');
+      return;
+    }
+
+    if (window.TossPayments) {
+      const tossPayments = window.TossPayments(clientKey);
+      setTossPayments(tossPayments);
+    } else {
+      console.error('토스페이먼츠 SDK가 로드되지 않았습니다.');
+    }
+  }, []);
 
   // 정기권 상태 확인
   useEffect(() => {
@@ -88,27 +113,94 @@ export default function SeasonTicketPage() {
     }
   };
 
+  // 결제 금액 계산
+  const getPaymentAmount = (planType: Plan): number => {
+    switch (planType) {
+      case '1m':
+        return 15000;
+      case '3m':
+        return 40000;
+      case '6m':
+        return 75000;
+    }
+  };
+
+  // 고유한 주문 ID 생성
+  const generateOrderId = () => {
+    return `PASS_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  };
+
+  // 토스페이먼츠 결제 요청
+  const requestTossPayment = async (createdPass: any) => {
+    if (!tossPayments) {
+      setError('결제 시스템이 준비되지 않았습니다.');
+      return;
+    }
+
+    const orderId = generateOrderId();
+    const customerName = '정기권 구매자'; // 실제로는 사용자 정보에서 가져와야 함
+    const selectedTicket = getTicketInfo(plan);
+    const paymentAmount = getPaymentAmount(plan);
+
+    try {
+      // 현재 URL을 기준으로 리다이렉트 URL 생성
+      const currentOrigin = window.location.origin;
+      const successUrl = `${currentOrigin}/success-payment?passId=${createdPass.id}`;
+      const failUrl = `${currentOrigin}/success-payment?passId=${createdPass.id}`;
+
+      // 정기권 정보를 sessionStorage에 저장 (결제 완료 후 사용)
+      const paymentData = {
+        passId: createdPass.id,
+        passType: planToPassType(plan),
+        paymentMethod: paymentService.toUpperCase() as PaymentMethod,
+        amount: paymentAmount,
+      };
+      sessionStorage.setItem('pendingPass', JSON.stringify(paymentData));
+
+      // 토스페이먼츠 결제창 호출
+      await tossPayments.requestPayment('카드', {
+        amount: paymentAmount,
+        orderId: orderId,
+        orderName: `${selectedTicket.name} 정기권`,
+        customerName: customerName,
+        successUrl: successUrl,
+        failUrl: failUrl,
+      });
+    } catch (error: any) {
+      console.error('토스페이먼츠 결제 요청 실패:', error);
+      if (error.code === 'USER_CANCEL') {
+        setError('결제가 취소되었습니다.');
+      } else {
+        setError(error.message || '결제 요청 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
   // 정기권 구매 처리
   const handlePurchase = async () => {
     try {
       setPurchasing(true);
       setError(null);
 
-      const selectedTicket = getTicketInfo(plan);
       const passType = planToPassType(plan);
 
+      // 먼저 정기권 구매 API 호출
       const purchaseRequest: PurchasePassRequest = {
         passType,
-        paymentMethod: 'KAKAO_PAY',
       };
 
-      await purchasePass(purchaseRequest);
+      const createdPass = await purchasePass(purchaseRequest);
+      console.log('Pass created:', createdPass);
 
-      // 결제 완료 알림
-      alert(`${selectedTicket.name} ${selectedTicket.price}이 카카오페이로 결제되었습니다.`);
-
-      // 페이지 새로고침하여 정기권 상태 업데이트
-      window.location.reload();
+      // 결제가 필요한 경우 토스페이먼츠 결제 진행
+      if (paymentService === 'toss') {
+        await requestTossPayment(createdPass);
+      } else if (paymentService === 'kakao') {
+        // 카카오페이 결제는 나중에 구현
+        setError('카카오페이 결제는 준비 중입니다.');
+      } else {
+        setError('지원하지 않는 결제 방식입니다.');
+      }
     } catch (err) {
       console.error('정기권 구매 실패:', err);
       setError(err instanceof Error ? err.message : '정기권 구매에 실패했습니다.');

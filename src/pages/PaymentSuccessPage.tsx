@@ -21,6 +21,7 @@ export default function PaymentSuccessPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isPassPayment, setIsPassPayment] = useState(false);
 
   useEffect(() => {
     const processPayment = async () => {
@@ -34,13 +35,17 @@ export default function PaymentSuccessPage() {
           throw new Error('결제 정보가 올바르지 않습니다.');
         }
 
-        // sessionStorage에서 예약 정보 가져오기
+        // sessionStorage에서 예약 또는 정기권 정보 가져오기
         const pendingReservationStr = sessionStorage.getItem('pendingReservation');
-        if (!pendingReservationStr) {
-          throw new Error('예약 정보를 찾을 수 없습니다.');
+        const pendingPassStr = sessionStorage.getItem('pendingPass');
+
+        if (!pendingReservationStr && !pendingPassStr) {
+          throw new Error('결제 정보를 찾을 수 없습니다.');
         }
 
-        const reservationData: ReservationData = JSON.parse(pendingReservationStr);
+        const isPassPayment = !!pendingPassStr;
+        setIsPassPayment(isPassPayment);
+        const paymentData = isPassPayment ? JSON.parse(pendingPassStr!) : JSON.parse(pendingReservationStr!);
 
         // 백엔드에서 결제 승인
         const paymentConfirmData: PaymentConfirmRequest = {
@@ -53,16 +58,21 @@ export default function PaymentSuccessPage() {
         const paymentResult = await confirmPayment(paymentConfirmData);
         console.log('결제 승인 성공:', paymentResult);
 
-        // 결제 승인 성공 후 예약 생성
-        const reservation = await createReservation({
-          routeId: reservationData.routeId,
-          reservationDate: reservationData.reservationDate,
-        });
+        if (isPassPayment) {
+          // 정기권 결제의 경우 - 별도 처리 없이 성공 표시
+          console.log('정기권 결제 완료:', paymentData);
+          sessionStorage.removeItem('pendingPass');
+        } else {
+          // 예약 결제의 경우 - 예약 생성
+          const reservationData = paymentData as ReservationData;
+          const reservation = await createReservation({
+            routeId: reservationData.routeId,
+            reservationDate: reservationData.reservationDate,
+          });
+          console.log('예약 생성 성공:', reservation);
+          sessionStorage.removeItem('pendingReservation');
+        }
 
-        console.log('예약 생성 성공:', reservation);
-
-        // 성공 시 sessionStorage 정리
-        sessionStorage.removeItem('pendingReservation');
         setSuccess(true);
       } catch (err) {
         console.error('결제 처리 실패:', err);
@@ -143,13 +153,16 @@ export default function PaymentSuccessPage() {
                 결제가 완료되었습니다
               </Text>
               <Text className='text-center text-gray-600' typography='body2'>
-                셔틀 예약이 정상적으로 완료되었습니다.
+                {isPassPayment ? '정기권 구매가 정상적으로 완료되었습니다.' : '셔틀 예약이 정상적으로 완료되었습니다.'}
               </Text>
             </VStack>
           </VStack>
         </div>
         <div className='sticky bottom-0 z-50 bg-white px-6 pt-2.5 pb-12 shadow-[0_4px_20px_0_rgba(0,0,0,0.15)]'>
-          <NavButton label='예약 내역 확인' onClick={handleGoToReservation} />
+          <NavButton
+            label={isPassPayment ? '정기권 관리' : '예약 내역 확인'}
+            onClick={isPassPayment ? () => navigate('/season-ticket') : handleGoToReservation}
+          />
         </div>
       </div>
     );
