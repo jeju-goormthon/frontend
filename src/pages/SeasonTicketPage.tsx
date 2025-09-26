@@ -213,13 +213,13 @@ export default function SeasonTicketPage() {
                     <Text foreground='hint' typography='subtitle1'>
                       결제 예정금액
                     </Text>
-                    <Text typography='subtitle1'>{currentTicket.amount?.toLocaleString() || '0'}원</Text>
+                    <Text typography='subtitle1'>{currentTicket.price?.toLocaleString() || '0'}원</Text>
                   </div>
                   <div className='flex justify-between'>
                     <Text foreground='hint' typography='subtitle1'>
                       결제 수단
                     </Text>
-                    <Text typography='subtitle1'>{currentTicket.paymentMethod || '카드'}</Text>
+                    <Text typography='subtitle1'>카드</Text>
                   </div>
                 </div>
               </Box>
