@@ -4,10 +4,19 @@ import { useNavigate } from 'react-router-dom';
 
 interface BackHeaderProps {
   title: string;
+  onBack?: () => void;
 }
 
-export default function BackHeader({ title }: BackHeaderProps) {
+export default function BackHeader({ title, onBack }: BackHeaderProps) {
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
 
   return (
     <Grid.Root
@@ -19,13 +28,15 @@ export default function BackHeader({ title }: BackHeaderProps) {
       width='100%'
     >
       <Grid.Item>
-        <IconButton aria-label='뒤로가기' variant='ghost' onClick={() => navigate(-1)}>
+        <IconButton aria-label='뒤로가기' variant='ghost' onClick={handleBack}>
           <ChevronLeftOutlineIcon className='stroke-2 text-[#5D5D5D]' size={24} />
         </IconButton>
       </Grid.Item>
 
       <Grid.Item className='justify-self-center'>
-        <Text className='text-[18px] leading-[1.3] font-semibold text-[#262626]'>{title}</Text>
+        <Text className='text-[#262626]' typography='heading6'>
+          {title}
+        </Text>
       </Grid.Item>
 
       <Grid.Item>

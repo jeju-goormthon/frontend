@@ -91,7 +91,7 @@ export default function TermsAgreement({ onChange }: Props) {
                   type='button'
                   onClick={() => openDetail(LABELS[key])}
                 >
-                  <ChevronRightOutlineIcon className='h-5 w-5 text-gray-400' />
+                  <ChevronRightOutlineIcon className='h-4 w-4 text-gray-400' />
                 </button>
               </div>
             </li>

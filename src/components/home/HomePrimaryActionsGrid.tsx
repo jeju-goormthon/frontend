@@ -3,6 +3,8 @@ import { Box, Button } from '@vapor-ui/core';
 import { ChevronRightOutlineIcon } from '@vapor-ui/icons';
 import { useNavigate } from 'react-router-dom';
 
+import { useAuthStore } from '@/stores/authStore';
+
 import busPng from '../../assets/images/home/bus.png';
 import busWebp from '../../assets/images/home/bus.webp';
 import ticketPng from '../../assets/images/home/ticket.png';
@@ -10,6 +12,15 @@ import ticketWebp from '../../assets/images/home/ticket.webp';
 
 export default function HomePrimaryActionsGrid() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+
+  const handleNavigateWithAuth = (path: string) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    navigate(path);
+  };
 
   const labelTypography: React.CSSProperties = {
     fontFamily: 'var(--vapor-typography-fontFamily-sans)',
@@ -42,7 +53,7 @@ export default function HomePrimaryActionsGrid() {
             ...cardRadius,
             background: 'linear-gradient(140deg, #3174DC 0%, #F1F7FF 129.14%)',
           }}
-          onClick={() => navigate('/route')}
+          onClick={() => handleNavigateWithAuth('/route')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-white)' }}>
             노선 선택
@@ -67,10 +78,10 @@ export default function HomePrimaryActionsGrid() {
             ...cardRadius,
             background: 'linear-gradient(157deg, #CEE3FF 14.83%, #B5D4FF 55.94%, #3174DC 127%)',
           }}
-          onClick={() => navigate('/tickets')}
+          onClick={() => handleNavigateWithAuth('/reservations')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-foreground-normal)' }}>
-            탑승권 확인
+            예약 확인
           </span>
 
           <picture aria-hidden>
@@ -89,7 +100,7 @@ export default function HomePrimaryActionsGrid() {
         <Button
           className={cardBase}
           style={{ ...cardRadius, background: '#F1F7FF' }}
-          onClick={() => navigate('/season-ticket')}
+          onClick={() => handleNavigateWithAuth('/season-ticket')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-foreground-normal)' }}>
             정기권 관리
@@ -106,10 +117,10 @@ export default function HomePrimaryActionsGrid() {
         <Button
           className={cardBase}
           style={{ ...cardRadius, background: '#F1F7FF' }}
-          onClick={() => navigate('/department')}
+          onClick={() => handleNavigateWithAuth('/department')}
         >
           <span className={titlePos} style={{ ...labelTypography, color: 'var(--vapor-color-foreground-normal)' }}>
-            진료과목 변경
+            진료과목 선택
           </span>
 
           <ChevronRightOutlineIcon
