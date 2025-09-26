@@ -13,7 +13,7 @@ export default function Header() {
       {/* TODO: 로고 자리 */}
       <LogoIcon className='cursor-pointer' onClick={() => navigate('/')} />
       {/* TODO: 마이페이지 있을 시 버튼으로 대체 */}
-      {isAuthenticated && <LogoutIcon className='size-5 cursor-pointer' onClick={() => clearAuth()} />}
+      {isAuthenticated && <LogoutIcon className='text-v-gray-400 size-5 cursor-pointer' onClick={() => clearAuth()} />}
     </HStack>
   );
 }

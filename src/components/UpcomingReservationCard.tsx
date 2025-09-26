@@ -104,12 +104,7 @@ export default function UpcomingReservationCard() {
             <Text className='text-center leading-[var(--vapor-typography-lineHeight-075)] font-medium tracking-[var(--vapor-typography-letterSpacing-100)] text-[#959595]'>
               로그인 후 탑승 예약을 확인해 주세요
             </Text>
-            <Button
-              className='text-v-primary rounded-4xl bg-[#CEE3FF]'
-              color='secondary'
-              size='md'
-              onClick={handleLoginClick}
-            >
+            <Button className='rounded-4xl bg-[#3174DC] text-white' size='md' onClick={handleLoginClick}>
               로그인하기
             </Button>
           </VStack>

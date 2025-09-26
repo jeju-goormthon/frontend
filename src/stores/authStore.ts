@@ -55,7 +55,6 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           isAuthenticated: false,
           user: null,
-          medicalDepartment: null,
         });
         // axiosInstance에서 Authorization 헤더 제거
         delete axiosInstance.defaults.headers.common['Authorization'];
