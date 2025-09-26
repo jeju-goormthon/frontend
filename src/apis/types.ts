@@ -141,7 +141,6 @@ export interface PaymentResponse {
 // Pass API Types
 export interface PurchasePassRequest {
   passType: PassType;
-  paymentMethod: PaymentMethod;
 }
 
 export interface PassResponse {
