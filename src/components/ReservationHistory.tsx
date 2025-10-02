@@ -4,15 +4,8 @@ import { ChevronRightOutlineIcon } from '@vapor-ui/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type Reservation = {
-  id: string;
-  // ISO 문자열(예: '2025-09-26T09:00:00+09:00') 또는 서버 포맷
-  // date와 time이 분리되어 온다면 아래 parse에서 조합합니다.
-  date: string; // '2025-09-26'
-  time: string; // '09:00'
-  departure: string; // 출발장소
-  department: string; // 진료과목 (예: '내과(제주대학교병원)')
-};
+import { getMyReservations } from '@/apis/reservations';
+import type { ReservationResponse } from '@/apis/types';
 
 function PillButton({
   active,
@@ -46,14 +39,14 @@ type FilterKey = 'upcoming' | 'past';
 export default function ReservationHistory() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterKey>('upcoming');
-  const [data, setData] = useState<Reservation[]>([]);
+  const [data, setData] = useState<ReservationResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // --- util: 날짜/시간 파싱 & 포맷 ---
-  const toDate = (d: string, t: string) => {
-    // 로컬(한국) 기준 조합. 서버가 이미 타임존을 포함한 ISO를 준다면 그대로 new Date(iso) 하세요.
-    // 여기서는 'YYYY-MM-DD' + 'HH:mm' 가정.
-    return new Date(`${d}T${t}:00`);
+  const toDate = (dateStr: string, timeStr: string) => {
+    // ReservationResponse의 reservationDate와 startTime을 조합
+    return new Date(`${dateStr}T${timeStr}`);
   };
 
   const formatKoreanDate = (d: Date) => {
@@ -111,40 +104,22 @@ export default function ReservationHistory() {
     (async () => {
       try {
         setLoading(true);
-        // 실제 API로 변경하세요.
-        // const res = await fetch('/api/reservations');
-        // const json: Reservation[] = await res.json();
+        setError(null);
 
-        // 데모용 목업
-        const json: Reservation[] = [
-          {
-            id: 'rsv_1',
-            date: '2025-09-27',
-            time: '09:00',
-            departure: '애월읍사무소 앞',
-            department: '내과(제주대학교병원)',
-          },
-          {
-            id: 'rsv_2',
-            date: '2025-09-26',
-            time: '13:30',
-            departure: '애월읍사무소 앞',
-            department: '재활의학과(제주대학교병원)',
-          },
-          {
-            id: 'rsv_2',
-            date: '2025-09-23',
-            time: '13:30',
-            departure: '애월읍사무소 앞',
-            department: '재활의학과(제주대학교병원)',
-          },
-        ];
+        const reservations = await getMyReservations();
 
-        if (mounted) setData(json);
+        if (mounted) {
+          setData(reservations);
+        }
       } catch (e) {
-        console.error(e);
+        console.error('예약 목록 조회 실패:', e);
+        if (mounted) {
+          setError(e instanceof Error ? e.message : '예약 목록을 불러올 수 없습니다.');
+        }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -156,7 +131,7 @@ export default function ReservationHistory() {
   const filtered = useMemo(() => {
     const list = data
       .map((r) => {
-        const d = toDate(r.date, r.time);
+        const d = toDate(r.reservationDate, r.startTime);
         return {
           ...r,
           _date: d,
@@ -170,7 +145,7 @@ export default function ReservationHistory() {
         const t = today.getTime();
         return filter === 'upcoming' ? rideDay >= t : rideDay < t;
       })
-      // 다가올 예약: 가까운 순 / 지난 예약: 최근 순
+      .filter((r) => r.status !== 'CANCELLED')
       .sort((a, b) =>
         filter === 'upcoming' ? a._date.getTime() - b._date.getTime() : b._date.getTime() - a._date.getTime(),
       );
@@ -178,17 +153,8 @@ export default function ReservationHistory() {
     return list;
   }, [data, filter]);
 
-  const goDetail = async (id: string) => {
-    try {
-      // 상세 API 호출 후 라우팅
-      const res = await fetch(`/api/reservations/${id}`);
-      const detail = await res.json();
-      navigate(`/reservations/${id}`, { state: detail }); // 또는 query/param로 전달
-    } catch (e) {
-      console.error(e);
-      // 실패 시에도 우선 이동하고 상세 페이지에서 재시도하도록 할 수 있음
-      navigate(`/reservations/${id}`);
-    }
+  const goDetail = (id: number) => {
+    navigate(`/reservations/${id}/ticket`);
   };
 
   return (
@@ -206,6 +172,10 @@ export default function ReservationHistory() {
       {/* 리스트 */}
       {loading ? (
         <Text className='text-[#6B7280]'>불러오는 중…</Text>
+      ) : error ? (
+        <Box className='rounded-2xl' style={{ background: '#F7F8FA', padding: 24, textAlign: 'center' }}>
+          <Text className='text-[#D92D20]'>{error}</Text>
+        </Box>
       ) : filtered.length === 0 ? (
         <Box className='rounded-2xl' style={{ background: '#F7F8FA', padding: 24, textAlign: 'center' }}>
           <Text className='text-[#6B7280]'>표시할 예약이 없습니다.</Text>
@@ -244,10 +214,10 @@ export default function ReservationHistory() {
                 탑승시간<span className='pl-3 text-base text-[#262626]'>{reservation.displayTime} </span>
               </Text>
               <Text className='mb-1 text-[#959595]' typography='subtitle1'>
-                출발장소<span className='pl-3 text-base text-[#262626]'>{reservation.departure}</span>
+                출발장소<span className='pl-3 text-base text-[#262626]'>{reservation.pickupLocation}</span>
               </Text>
               <Text className='mb-1 text-[#959595]' typography='subtitle1'>
-                진료과목<span className='pl-3 text-base text-[#262626]'>{reservation.department}</span>
+                병원<span className='pl-3 text-base text-[#262626]'>{reservation.hospitalName}</span>
               </Text>
             </VStack>
 

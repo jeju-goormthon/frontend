@@ -2,12 +2,17 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import axiosInstance from '@/apis/axiosInstance';
+import type { MedicalDepartment, UserResponse } from '@/apis/types';
 
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  user: UserResponse | null;
+  medicalDepartment: MedicalDepartment | null;
   setTokens: (accessToken: string, refreshToken: string) => void;
+  setUser: (user: UserResponse) => void;
+  setMedicalDepartment: (department: MedicalDepartment) => void;
   clearAuth: () => void;
 }
 
@@ -17,6 +22,8 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
+      user: null,
+      medicalDepartment: null,
 
       setTokens: (accessToken: string, refreshToken: string) => {
         set({
@@ -28,11 +35,26 @@ export const useAuthStore = create<AuthState>()(
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       },
 
+      setUser: (user: UserResponse) => {
+        set({
+          user,
+          medicalDepartment: user.medicalDepartment,
+        });
+      },
+
+      setMedicalDepartment: (department: MedicalDepartment) => {
+        set((state) => ({
+          medicalDepartment: department,
+          user: state.user ? { ...state.user, medicalDepartment: department } : null,
+        }));
+      },
+
       clearAuth: () => {
         set({
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
+          user: null,
         });
         // axiosInstance에서 Authorization 헤더 제거
         delete axiosInstance.defaults.headers.common['Authorization'];
@@ -44,11 +66,23 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
+        user: state.user,
+        medicalDepartment: state.medicalDepartment,
       }),
       onRehydrateStorage: () => (state) => {
         // hydration 완료 후 axios 헤더 설정
         if (state?.accessToken) {
           axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${state.accessToken}`;
+        }
+
+        // user 객체가 API 응답 래퍼 형태로 저장된 경우를 정리
+        if (state?.user && typeof state.user === 'object' && 'data' in state.user) {
+          const userData = (state.user as any).data;
+          state.user = userData;
+          state.medicalDepartment = userData?.medicalDepartment || null;
+        } else if (state?.user && state.user.medicalDepartment) {
+          // 정상적인 user 객체인 경우 medicalDepartment 동기화
+          state.medicalDepartment = state.user.medicalDepartment;
         }
       },
     },
